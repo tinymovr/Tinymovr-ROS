@@ -3,7 +3,7 @@
 
 using namespace tinymovr_ros;
 
-bool Tinymovr::read(const ros::Duration& period)
+bool Tinymovr::read(const ros::Duration& dt)
 {
     return true;
 }
