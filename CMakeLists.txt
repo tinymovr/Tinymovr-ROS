@@ -110,7 +110,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
  INCLUDE_DIRS include
- LIBRARIES tinymovr_ros socketcan_cpp
+ LIBRARIES tinymovr_ros
  CATKIN_DEPENDS controller_interface controller_manager roscpp rospy std_msgs sensor_msgs
 # DEPENDS system_lib
 )
@@ -131,12 +131,8 @@ include_directories(
 #   src/${PROJECT_NAME}/tinymovr_ros.cpp
 # )
 
-add_library(socketcan_cpp src/socketcan_cpp.cpp)
-add_library(${PROJECT_NAME}_hw_iface src/tm_hw_iface.cpp src/socketcan_cpp.cpp)
-add_library(${PROJECT_NAME}_diffbot_hw_iface src/diffbot_hw_iface.cpp src/socketcan_cpp.cpp)
-
-include(GenerateExportHeader)
-generate_export_header(socketcan_cpp)
+add_library(${PROJECT_NAME}_hw_iface src/tm_hw_iface.cpp)
+add_library(${PROJECT_NAME}_diffbot_hw_iface src/diffbot_hw_iface.cpp)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries

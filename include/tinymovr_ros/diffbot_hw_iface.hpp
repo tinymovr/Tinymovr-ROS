@@ -2,7 +2,6 @@
 #pragma once
 
 #include <vector>
-#include "socketcan_cpp/socketcan_cpp.hpp"
 #include <hardware_interface/joint_command_interface.h>
 #include <hardware_interface/joint_state_interface.h>
 #include <hardware_interface/robot_hw.h>
@@ -16,6 +15,16 @@ class Diffbot : public hardware_interface::RobotHW
 public:
     Diffbot() 
     { 
+        if ()
+        {
+            ROS_INFO_STREAM(infoPrefix << "CAN socket open");
+        }
+        else
+        {
+            ROS_ERROR_STREAM(infoPrefix << "Could not open CAN Socket");
+			exit(1);
+        }
+
         // connect and register the joint state interface
         hardware_interface::JointStateHandle state_handle_a("A", &hw_positions_[0], &hw_velocities_[0], &hw_efforts_[0]);
         jnt_state_interface.registerHandle(state_handle_a);
@@ -41,10 +50,11 @@ public:
     uint32_t make_arbitration_id(uint32_t node_id, uint32_t command_id);
 
 private:
+    std::string infoPrefix = "SocketCAN: ";
+
     const double radius = 0.075;  // radius of the wheels
     const double dist_w = 0.38;   // distance between the wheels
     
-    scpp::SocketCan socket_can;
     hardware_interface::JointStateInterface jnt_state_interface;
     hardware_interface::VelocityJointInterface jnt_vel_interface;
     std::vector<double> hw_commands_;
