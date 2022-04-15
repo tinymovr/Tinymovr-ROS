@@ -1,6 +1,8 @@
 
 #pragma once
 
+#define HAVE_SOCKETCAN_HEADERS
+
 #include <vector>
 #include "socketcan_cpp/socketcan_cpp.hpp"
 #include <hardware_interface/joint_command_interface.h>
