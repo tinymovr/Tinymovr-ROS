@@ -1,8 +1,6 @@
 
 #pragma once
 
-#define HAVE_SOCKETCAN_HEADERS
-
 #include <vector>
 #include "socketcan_cpp/socketcan_cpp.hpp"
 #include <hardware_interface/joint_command_interface.h>
@@ -18,6 +16,17 @@ class Diffbot : public hardware_interface::RobotHW
 public:
     Diffbot() 
     { 
+        auto status = socket_can.open("can0");
+        if (scpp::STATUS_OK == status)
+        {
+            ROS_INFO("Socketcan opened successfully");
+        }
+        else
+        {
+            ROS_ERROR("Cant' open Socketcan: %d", status);
+            exit(1);
+        }
+
         // connect and register the joint state interface
         hardware_interface::JointStateHandle state_handle_a("A", &hw_positions_[0], &hw_velocities_[0], &hw_efforts_[0]);
         jnt_state_interface.registerHandle(state_handle_a);
@@ -49,10 +58,10 @@ private:
     scpp::SocketCan socket_can;
     hardware_interface::JointStateInterface jnt_state_interface;
     hardware_interface::VelocityJointInterface jnt_vel_interface;
-    std::vector<double> hw_commands_;
-    std::vector<double> hw_positions_;
-    std::vector<double> hw_velocities_;
-    std::vector<double> hw_efforts_;
+    std::vector<double> hw_commands_ {0.0, 0.0};
+    std::vector<double> hw_positions_ {0.0, 0.0};
+    std::vector<double> hw_velocities_ {0.0, 0.0};
+    std::vector<double> hw_efforts_ {0.0, 0.0};
     std::vector<uint8_t> hw_node_ids_ {1, 2};
 
     // Store the wheeled robot position
