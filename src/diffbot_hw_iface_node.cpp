@@ -10,21 +10,21 @@ int main(int argc, char **argv)
     ros::NodeHandle nh;
     controller_manager::ControllerManager cm(&db, nh);
 
-    ros::Time last, now;
-    now = last = ros::Time::now();
-    ros::Duration period(0.05);
+    ros::Rate rate(20.0);
+    ros::Time last;
 
     ros::AsyncSpinner spinner(2);
     spinner.start();
 
     while (ros::ok())
     {
-        now = ros::Time::now();
-        period = now - last;
+        const ros::Time now = ros::Time::now();
+        const ros::Duration period = now - last;
         last = now;
         db.read(period);
         cm.update(now, period);
         db.write();
+        rate.sleep();
     }
     spinner.stop();
     return 0;

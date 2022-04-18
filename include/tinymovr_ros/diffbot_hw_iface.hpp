@@ -28,14 +28,11 @@ private:
 
     hardware_interface::JointStateInterface jnt_state_interface;
     hardware_interface::VelocityJointInterface jnt_vel_interface;
-    std::vector<double> hw_commands_ {0.0, 0.0};
-    std::vector<double> hw_positions_ {0.0, 0.0};
-    std::vector<double> hw_velocities_ {0.0, 0.0};
-    std::vector<double> hw_efforts_ {0.0, 0.0};
+    std::vector<double> hw_commands_ {0.0, 0.0}; // rad/s
+    std::vector<double> hw_positions_ {0.0, 0.0}; // rad
+    std::vector<double> hw_velocities_ {0.0, 0.0}; // rad/s
+    std::vector<double> hw_efforts_ {0.0, 0.0}; // Nm?
     std::vector<uint8_t> hw_node_ids_ {1, 2};
-
-    // Store the wheeled robot position
-    double base_x_, base_y_, base_theta_;
 };
 
 }

@@ -55,14 +55,6 @@ bool Diffbot::read(const ros::Duration& dt)
         hw_positions_[i] = (double)(*hw_pos_float);
         hw_velocities_[i] = (double)(*hw_vel_float);
     }
-    // Update the free-flyer, i.e. the base notation using the classical
-    // wheel differentiable kinematics
-    double base_dx = 0.5 * radius * (hw_velocities_[0] + hw_velocities_[1]) * cos(base_theta_);
-    double base_dy = 0.5 * radius * (hw_velocities_[0] + hw_velocities_[1]) * sin(base_theta_);
-    double base_dtheta = radius * (hw_velocities_[0] - hw_velocities_[1]) / dist_w;
-    base_x_ += base_dx * dt.toSec();
-    base_y_ += base_dy * dt.toSec();
-    base_theta_ += base_dtheta * dt.toSec();
 
     return true;
 }
