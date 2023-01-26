@@ -1,5 +1,5 @@
 
-#include <tinymovr_ros/tinymovr_can.hpp>
+#include <tinymovr_can.hpp>
 
 namespace tinymovr_ros
 {
@@ -40,9 +40,14 @@ bool TinymovrCAN::read_frame(uint32_t node_id, uint32_t ep_id, uint8_t* data, ui
 
 bool TinymovrCAN::write_frame(uint32_t node_id, uint32_t ep_id, const uint8_t *data, uint8_t data_len)
 {
+    return write_frame(make_arbitration_id(node_id, ep_id));
+}
+
+bool TinymovrCAN::write_frame(uint32_t arbitration_id, const uint8_t *data, uint8_t data_len)
+{
     scpp::CanFrame cf_to_write;
 
-    cf_to_write.id = make_arbitration_id(node_id, ep_id);
+    cf_to_write.id = arbitration_id;
     cf_to_write.len = data_len;
     for (int i = 0; i < data_len; ++i)
         cf_to_write.data[i] = data[i];
