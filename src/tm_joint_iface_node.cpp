@@ -1,12 +1,12 @@
 
-#include <tm_hw_iface.hpp>
+#include <tm_joint_iface.hpp>
 #include <controller_manager/controller_manager.h>
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "tinymovr_ros_iface_node");
+    ros::init(argc, argv, "tinymovr_joint_iface_node");
 
-    tinymovr_ros::TinymovrHW tm_hw;
+    tinymovr_ros::TinymovrJoint tm_joint;
     ros::NodeHandle nh;
     controller_manager::ControllerManager cm(&tm, nh);
 
@@ -21,9 +21,9 @@ int main(int argc, char **argv)
         const ros::Time now = ros::Time::now();
         const ros::Duration period = now - last;
         last = now;
-        tm_hw.read(period);
+        tm_joint.read(period);
         cm.update(now, period);
-        tm_hw.write();
+        tm_joint.write();
         rate.sleep();
     }
     spinner.stop();

@@ -43,10 +43,10 @@ bool recv_cb(uint32_t arbitration_id, uint8_t *data, uint8_t *data_size)
 // ---------------------------------------------------------------
 
 
-class TinymovrHW : public hardware_interface::RobotHW
+class TinymovrActuator : public hardware_interface::RobotHW
 {
 public:
-    TinymovrHW();
+    TinymovrActuator();
     bool read(const ros::Duration& period);
     bool write();
 

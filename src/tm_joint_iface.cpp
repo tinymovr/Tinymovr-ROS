@@ -5,11 +5,11 @@
 
 #include <linux/can.h>
 #include <linux/can/raw.h>
-#include <tm_hw_iface.hpp>
+#include <tm_joint_iface.hpp>
 
 using namespace tinymovr_ros;
 
-TinymovrHW::TinymovrHW(): tm(1, send_cb, recv_cb)
+TinymovrHW::TinymovrJoint(): tm(1, send_cb, recv_cb)
 { 
     tmcan.init();
 
@@ -34,7 +34,7 @@ TinymovrHW::TinymovrHW(): tm(1, send_cb, recv_cb)
     registerInterface(&jnt_eff_interface);
 }
 
-bool TinymovrHW::read(const ros::Duration& dt)
+bool TinymovrJoint::read(const ros::Duration& dt)
 {
     pos = tm.encoder.get_position_estimate();
     vel = tm.encoder.get_velocity_estimate();
@@ -42,7 +42,7 @@ bool TinymovrHW::read(const ros::Duration& dt)
     return true;
 }
 
-bool TinymovrHW::write()
+bool TinymovrJoint::write()
 {
     tm.controller.position.set_setpoint(cmd_pos);
     tm.controller.velocity.set_setpoint(cmd_vel);
