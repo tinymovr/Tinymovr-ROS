@@ -1,8 +1,8 @@
 
 #pragma once
 
-#include <hardware_interface/joint_command_interface.h>
-#include <hardware_interface/joint_state_interface.h>
+#include <hardware_interface/actuator_command_interface.h>
+#include <hardware_interface/actuator_state_interface.h>
 #include <hardware_interface/robot_hw.h>
 #include <ros/ros.h>
 #include <tinymovr_ros/tinymovr_can.hpp>
@@ -51,10 +51,10 @@ public:
     bool write();
 
 private:
-    hardware_interface::JointStateInterface jnt_state_interface;
-    hardware_interface::PositionJointInterface jnt_pos_interface;
-    hardware_interface::VelocityJointInterface jnt_vel_interface;
-    hardware_interface::EffortJointInterface jnt_eff_interface;
+    hardware_interface::ActuatorStateInterface act_state_interface;
+    hardware_interface::PositionActuatorInterface act_pos_interface;
+    hardware_interface::VelocityActuatorInterface act_vel_interface;
+    hardware_interface::EffortActuatorInterface act_eff_interface;
     double cmd_pos;
     double cmd_vel;
     double cmd_eff;

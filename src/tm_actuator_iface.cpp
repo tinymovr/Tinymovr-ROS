@@ -13,25 +13,25 @@ TinymovrHW::TinymovrActuator(): tm(1, send_cb, recv_cb)
 { 
     tmcan.init();
 
-    // connect and register the joint state interface
-    hardware_interface::JointStateHandle state_handle_a("Actuator", &hw_positions_[0], &hw_velocities_[0], &hw_efforts_[0]);
-    jnt_state_interface.registerHandle(state_handle_a);
-    registerInterface(&jnt_state_interface);
+    // connect and register the actuator state interface
+    hardware_interface::ActuatorStateHandle state_handle_a("Actuator", &hw_positions_[0], &hw_velocities_[0], &hw_efforts_[0]);
+    act_state_interface.registerHandle(state_handle_a);
+    registerInterface(&act_state_interface);
 
-    // connect and register the joint position interface
-    hardware_interface::JointHandle pos_handle_a(jnt_state_interface.getHandle("Actuator"), &hw_commands_[0]);
-    jnt_pos_interface.registerHandle(pos_handle_a);
-    registerInterface(&jnt_pos_interface);
+    // connect and register the actuator position interface
+    hardware_interface::ActuatorHandle pos_handle_a(act_state_interface.getHandle("Actuator"), &hw_commands_[0]);
+    act_pos_interface.registerHandle(pos_handle_a);
+    registerInterface(&act_pos_interface);
 
-    // connect and register the joint velocity interface
-    hardware_interface::JointHandle vel_handle_a(jnt_state_interface.getHandle("Actuator"), &hw_commands_[1]);
-    jnt_vel_interface.registerHandle(vel_handle_a);
-    registerInterface(&jnt_vel_interface);
+    // connect and register the actuator velocity interface
+    hardware_interface::ActuatorHandle vel_handle_a(act_state_interface.getHandle("Actuator"), &hw_commands_[1]);
+    act_vel_interface.registerHandle(vel_handle_a);
+    registerInterface(&act_vel_interface);
 
-    // connect and register the joint effort interface
-    hardware_interface::JointHandle eff_handle_a(jnt_state_interface.getHandle("Actuator"), &hw_commands_[2]);
-    jnt_eff_interface.registerHandle(eff_handle_a);
-    registerInterface(&jnt_eff_interface);
+    // connect and register the actuator effort interface
+    hardware_interface::ActuatorHandle eff_handle_a(act_state_interface.getHandle("Actuator"), &hw_commands_[2]);
+    act_eff_interface.registerHandle(eff_handle_a);
+    registerInterface(&act_eff_interface);
 }
 
 bool TinymovrActuator::read(const ros::Duration& dt)

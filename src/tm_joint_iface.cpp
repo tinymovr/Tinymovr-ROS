@@ -14,22 +14,22 @@ TinymovrHW::TinymovrJoint(): tm(1, send_cb, recv_cb)
     tmcan.init();
 
     // connect and register the joint state interface
-    hardware_interface::JointStateHandle state_handle_a("Actuator", &hw_positions_[0], &hw_velocities_[0], &hw_efforts_[0]);
+    hardware_interface::JointStateHandle state_handle_a("Joint", &hw_positions_[0], &hw_velocities_[0], &hw_efforts_[0]);
     jnt_state_interface.registerHandle(state_handle_a);
     registerInterface(&jnt_state_interface);
 
     // connect and register the joint position interface
-    hardware_interface::JointHandle pos_handle_a(jnt_state_interface.getHandle("Actuator"), &hw_commands_[0]);
+    hardware_interface::JointHandle pos_handle_a(jnt_state_interface.getHandle("Joint"), &hw_commands_[0]);
     jnt_pos_interface.registerHandle(pos_handle_a);
     registerInterface(&jnt_pos_interface);
 
     // connect and register the joint velocity interface
-    hardware_interface::JointHandle vel_handle_a(jnt_state_interface.getHandle("Actuator"), &hw_commands_[1]);
+    hardware_interface::JointHandle vel_handle_a(jnt_state_interface.getHandle("Joint"), &hw_commands_[1]);
     jnt_vel_interface.registerHandle(vel_handle_a);
     registerInterface(&jnt_vel_interface);
 
     // connect and register the joint effort interface
-    hardware_interface::JointHandle eff_handle_a(jnt_state_interface.getHandle("Actuator"), &hw_commands_[2]);
+    hardware_interface::JointHandle eff_handle_a(jnt_state_interface.getHandle("Joint"), &hw_commands_[2]);
     jnt_eff_interface.registerHandle(eff_handle_a);
     registerInterface(&jnt_eff_interface);
 }
