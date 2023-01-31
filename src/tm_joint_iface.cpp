@@ -5,12 +5,54 @@
 
 #include <linux/can.h>
 #include <linux/can/raw.h>
+#include <tinymovr/tinymovr.hpp>
 #include <tm_joint_iface.hpp>
 
 using namespace std;
 
 namespace tinymovr_ros
 {
+
+ 
+TinymovrCAN tmcan;
+
+// ---------------------------------------------------------------
+/*
+ * Function:  send_cb 
+ * --------------------
+ *  Is called to send a CAN frame
+ *
+ *  arbitration_id: the frame arbitration id
+ *  data: pointer to the data array to be transmitted
+ *  data_size: the size of transmitted data
+ *  rtr: if the ftame is of request transmit type (RTR)
+ */
+void send_cb(uint32_t arbitration_id, uint8_t *data, uint8_t data_size, bool rtr)
+{
+    if (!tmcan.write_frame(arbitration_id, data, data_size))
+    {
+        throw "CAN write error";
+    }
+}
+
+/*
+ * Function:  recv_cb 
+ * --------------------
+ *  Is called to receive a CAN frame
+ *
+ *  arbitration_id: the frame arbitration id
+ *  data: pointer to the data array to be received
+ *  data_size: pointer to the variable that will hold the size of received data
+ */
+bool recv_cb(uint32_t arbitration_id, uint8_t *data, uint8_t *data_size)
+{
+    (void)arbitration_id;
+    if (!tmcan.read_frame(arbitration_id, 0, data, &data_size))
+    {
+        throw "CAN read error";
+    }
+}
+// ---------------------------------------------------------------
 
 TinymovrJoint::TinymovrJoint() {}
 
@@ -19,8 +61,8 @@ bool TinymovrJoint::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh)
     tmcan.init();
 
     //get joint names and num of joint
-    robot_hw_nh.getParam("joints/names", joint_names);
-    robot_hw_nh.getParam("joints/ids", joint_ids);
+    robot_hw_nh.getParam("joints/names", joint_name);
+    robot_hw_nh.getParam("joints/ids", joint_id);
     num_joints = joint_name.size();
 
     joint_position_command.resize(num_joints, 0.0);
@@ -33,7 +75,7 @@ bool TinymovrJoint::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh)
     // initialize servos with correct mode
     for (int i=0; i<num_joints; i++)
     {
-        servos.push_back(Tinymovr(joint_ids[i], &recv_cb, &send_cb);)
+        servos.push_back(Tinymovr(joint_id[i], &recv_cb, &send_cb);)
         ROS_ASSERT((servos[i].encoder.calibrated == true) && (servos[i].motor.calibrated == true))
         servos[i].controller.set_state(2);
         servos[i].controller.set_mode(2);
@@ -53,15 +95,15 @@ bool TinymovrJoint::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh)
         joint_state_interface.registerHandle(state_handle);
         
         // connect and register the joint position interface
-        hardware_interface::JointHandle pos_handle(jnt_state_interface.getHandle("Joint"), &cmd_pos_[i]);
+        hardware_interface::JointHandle pos_handle(joint_state_interface.getHandle("Joint"), &cmd_pos_[i]);
         joint_pos_interface.registerHandle(pos_handle);
         
         // connect and register the joint velocity interface
-        hardware_interface::JointHandle vel_handle(jnt_state_interface.getHandle("Joint"), &cmd_vel_[i]);
+        hardware_interface::JointHandle vel_handle(joint_state_interface.getHandle("Joint"), &cmd_vel_[i]);
         joint_vel_interface.registerHandle(vel_handle);
         
         // connect and register the joint effort interface
-        hardware_interface::JointHandle eff_handle(jnt_state_interface.getHandle("Joint"), &cmd_eff_[i]);
+        hardware_interface::JointHandle eff_handle(joint_state_interface.getHandle("Joint"), &cmd_eff_[i]);
         joint_eff_interface.registerHandle(eff_handle);
     }
 
@@ -107,43 +149,5 @@ bool TinymovrJoint::write()
         return false;
     }
 }
-
-// ---------------------------------------------------------------
-/*
- * Function:  send_cb 
- * --------------------
- *  Is called to send a CAN frame
- *
- *  arbitration_id: the frame arbitration id
- *  data: pointer to the data array to be transmitted
- *  data_size: the size of transmitted data
- *  rtr: if the ftame is of request transmit type (RTR)
- */
-void TinymovrJoint::send_cb(uint32_t arbitration_id, uint8_t *data, uint8_t data_size, bool rtr)
-{
-    if (!tmcan.write_frame(arbitration_id, data, data_size))
-    {
-        throw "CAN write error";
-    }
-}
-
-/*
- * Function:  recv_cb 
- * --------------------
- *  Is called to receive a CAN frame
- *
- *  arbitration_id: the frame arbitration id
- *  data: pointer to the data array to be received
- *  data_size: pointer to the variable that will hold the size of received data
- */
-bool TinymovrJoint::recv_cb(uint32_t arbitration_id, uint8_t *data, uint8_t *data_size)
-{
-    (void)arbitration_id;
-    if (!tmcan.read_frame(arbitration_id, 0, data, &data_size))
-    {
-        throw "CAN read error";
-    }
-}
-// ---------------------------------------------------------------
 
 }

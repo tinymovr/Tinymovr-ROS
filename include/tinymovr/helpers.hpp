@@ -49,6 +49,7 @@ class Node {
 
     bool recv(uint8_t cmd_id, uint8_t *data, uint8_t *data_size, uint16_t delay_us)
     {
+#if defined ARDUINO
         // A delay of a few 100s of us needs to be inserted
         // to ensure the response has been transmitted.
         // TODO: Better handle this using an interrupt.
@@ -56,6 +57,7 @@ class Node {
         {
             delayMicroseconds(delay_us);
         }
+#endif
         const uint8_t arb_id = this->get_arbitration_id(cmd_id);
         return this->recv_cb(arb_id, data, data_size);
     }

@@ -6,7 +6,6 @@
 #include <hardware_interface/robot_hw.h>
 #include <ros/ros.h>
 #include <tinymovr_can.hpp>
-#include <tinymovr/tinymovr.hpp>
 
 using namespace std;
 
@@ -26,8 +25,6 @@ protected:
     void send_cb(uint32_t arbitration_id, uint8_t *data, uint8_t data_size, bool rtr);
     bool recv_cb(uint32_t arbitration_id, uint8_t *data, uint8_t *data_size);
 
-    TinymovrCAN tmcan;
-    
     ros::NodeHandle nh_;
     
     hardware_interface::JointStateInterface joint_state_interface;
@@ -36,8 +33,8 @@ protected:
     hardware_interface::EffortJointInterface joint_eff_interface;
 
     int num_joints;
-    std::vector<string> joint_names;
-    std::vector<uint8_t> joint_ids;
+    std::vector<string> joint_name;
+    std::vector<int> joint_id;
     
     std::vector<double> joint_position_command;
     std::vector<double> joint_velocity_command;
