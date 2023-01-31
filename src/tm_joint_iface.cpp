@@ -104,3 +104,41 @@ bool TinymovrJoint::write()
         return false;
     }
 }
+
+// ---------------------------------------------------------------
+/*
+ * Function:  send_cb 
+ * --------------------
+ *  Is called to send a CAN frame
+ *
+ *  arbitration_id: the frame arbitration id
+ *  data: pointer to the data array to be transmitted
+ *  data_size: the size of transmitted data
+ *  rtr: if the ftame is of request transmit type (RTR)
+ */
+void TinymovrJoint::send_cb(uint32_t arbitration_id, uint8_t *data, uint8_t data_size, bool rtr)
+{
+    if (!tmcan.write_frame(arbitration_id, data, data_size))
+    {
+        throw "CAN write error";
+    }
+}
+
+/*
+ * Function:  recv_cb 
+ * --------------------
+ *  Is called to receive a CAN frame
+ *
+ *  arbitration_id: the frame arbitration id
+ *  data: pointer to the data array to be received
+ *  data_size: pointer to the variable that will hold the size of received data
+ */
+bool TinymovrJoint::recv_cb(uint32_t arbitration_id, uint8_t *data, uint8_t *data_size)
+{
+    (void)arbitration_id;
+    if (!tmcan.read_frame(hw_node_ids_[i], CMD_GET_ENC_ESTIMATES, data, &data_size))
+    {
+        throw "CAN read error";
+    }
+}
+// ---------------------------------------------------------------
