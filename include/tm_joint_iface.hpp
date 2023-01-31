@@ -5,7 +5,7 @@
 #include <hardware_interface/joint_state_interface.h>
 #include <hardware_interface/robot_hw.h>
 #include <ros/ros.h>
-#include <tinymovr_ros/tinymovr_can.hpp>
+#include <tinymovr_can.hpp>
 
 namespace tinymovr_ros
 {
