@@ -27,12 +27,13 @@ TinymovrCAN tmcan;
  *  data_size: the size of transmitted data
  *  rtr: if the ftame is of request transmit type (RTR)
  */
-void send_cb(uint32_t arbitration_id, uint8_t *data, uint8_t data_size, bool rtr)
+bool send_cb(uint32_t arbitration_id, uint8_t *data, uint8_t data_size, bool rtr)
 {
     if (!tmcan.write_frame(arbitration_id, data, data_size))
     {
         throw "CAN write error";
     }
+    return true;
 }
 
 /*
@@ -47,10 +48,11 @@ void send_cb(uint32_t arbitration_id, uint8_t *data, uint8_t data_size, bool rtr
 bool recv_cb(uint32_t arbitration_id, uint8_t *data, uint8_t *data_size)
 {
     (void)arbitration_id;
-    if (!tmcan.read_frame(arbitration_id, 0, data, &data_size))
+    if (!tmcan.read_frame(arbitration_id, 0, data, data_size))
     {
         throw "CAN read error";
     }
+    return true;
 }
 // ---------------------------------------------------------------
 
@@ -75,7 +77,7 @@ bool TinymovrJoint::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh)
     // initialize servos with correct mode
     for (int i=0; i<num_joints; i++)
     {
-        servos.push_back(Tinymovr(joint_id[i], &recv_cb, &send_cb);)
+        servos.push_back(Tinymovr(joint_id[i], &recv_cb, &send_cb));
         ROS_ASSERT((servos[i].encoder.calibrated == true) && (servos[i].motor.calibrated == true))
         servos[i].controller.set_state(2);
         servos[i].controller.set_mode(2);

@@ -22,9 +22,6 @@ public:
     void write(const ros::Time& time, const ros::Duration& period);
 
 protected:
-    void send_cb(uint32_t arbitration_id, uint8_t *data, uint8_t data_size, bool rtr);
-    bool recv_cb(uint32_t arbitration_id, uint8_t *data, uint8_t *data_size);
-
     ros::NodeHandle nh_;
     
     hardware_interface::JointStateInterface joint_state_interface;
