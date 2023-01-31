@@ -1,5 +1,0 @@
-<?xml version="1.0"?>
-<launch>
-  <rosparam command="load" file="$(find tinymovr_ros)/config/tm_actuator_iface.yaml" />
-  <node name="tinymovr_actuator_iface_node" pkg="tinymovr_ros" type="tinymovr_actuator_iface_node" output="screen"/>
-</launch>

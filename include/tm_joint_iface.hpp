@@ -10,60 +10,35 @@
 namespace tinymovr_ros
 {
 
-// ---------------------------------------------------------------
-/*
- * Function:  send_cb 
- * --------------------
- *  Is called to send a CAN frame
- *
- *  arbitration_id: the frame arbitration id
- *  data: pointer to the data array to be transmitted
- *  data_size: the size of transmitted data
- *  rtr: if the ftame is of request transmit type (RTR)
- */
-void send_cb(uint32_t arbitration_id, uint8_t *data, uint8_t data_size, bool rtr)
-{
-    return tmcan.write_frame(arbitration_id, data, data_size)
-}
-
-/*
- * Function:  recv_cb 
- * --------------------
- *  Is called to receive a CAN frame
- *
- *  arbitration_id: the frame arbitration id
- *  data: pointer to the data array to be received
- *  data_size: pointer to the variable that will hold the size of received data
- */
-bool recv_cb(uint32_t arbitration_id, uint8_t *data, uint8_t *data_size)
-{
-    (void)arbitration_id;
-    return tmcan.read_frame(hw_node_ids_[i], CMD_GET_ENC_ESTIMATES, data, &data_size);
-}
-// ---------------------------------------------------------------
-
-
 class TinymovrJoint : public hardware_interface::RobotHW
 {
 public:
     TinymovrJoint();
-    bool read(const ros::Duration& period);
-    bool write();
+    ~TinymovrJoint();
+    bool init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh);
+    void read(const ros::Time& time, const ros::Duration& period);
+    void write(const ros::Time& time, const ros::Duration& period);
 
-private:
-    hardware_interface::JointStateInterface jnt_state_interface;
-    hardware_interface::PositionJointInterface jnt_pos_interface;
-    hardware_interface::VelocityJointInterface jnt_vel_interface;
-    hardware_interface::EffortJointInterface jnt_eff_interface;
-    double cmd_pos;
-    double cmd_vel;
-    double cmd_eff;
-    double pos;
-    double vel;
-    double eff;
-    uint8_t node_id;
+protected:
+    ros::NodeHandle nh_;
+    
+    hardware_interface::JointStateInterface joint_state_interface;
+    hardware_interface::PositionJointInterface joint_pos_interface;
+    hardware_interface::VelocityJointInterface joint_vel_interface;
+    hardware_interface::EffortJointInterface joint_eff_interface;
 
-    Tinymovr tm;
+    int num_joints;
+    std::vector<string> joint_names;
+    std::vector<uint8_t> joint_ids;
+    
+    std::vector<double> joint_position_command;
+    std::vector<double> joint_velocity_command;
+    std::vector<double> joint_effort_command;
+    std::vector<double> joint_position_state;
+    std::vector<double> joint_velocity_state;
+    std::vector<double> joint_effort_state;
+
+    std::vector<Tinymovr> servos;
 };
 
 }
