@@ -1,0 +1,7 @@
+joints:
+  names:
+    - joint1
+    - joint2
+  ids:
+    - 1
+    - 2
