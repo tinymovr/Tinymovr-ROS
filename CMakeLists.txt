@@ -109,7 +109,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
- INCLUDE_DIRS include
+ INCLUDE_DIRS include include/tinymovr
  LIBRARIES tinymovr_ros
  CATKIN_DEPENDS controller_interface controller_manager roscpp rospy std_msgs sensor_msgs
 # DEPENDS system_lib
