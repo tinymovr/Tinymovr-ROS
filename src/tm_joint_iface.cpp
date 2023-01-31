@@ -7,7 +7,10 @@
 #include <linux/can/raw.h>
 #include <tm_joint_iface.hpp>
 
-using namespace tinymovr_ros;
+using namespace std;
+
+namespace tinymovr_ros
+{
 
 TinymovrJoint::TinymovrJoint() {}
 
@@ -30,7 +33,7 @@ bool TinymovrJoint::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh)
     // initialize servos with correct mode
     for (int i=0; i<num_joints; i++)
     {
-        servos.push_back(Tinymovr(joint_ids[i], &read_cb, &write_cb);)
+        servos.push_back(Tinymovr(joint_ids[i], &recv_cb, &send_cb);)
         ROS_ASSERT((servos[i].encoder.calibrated == true) && (servos[i].motor.calibrated == true))
         servos[i].controller.set_state(2);
         servos[i].controller.set_mode(2);
@@ -136,9 +139,11 @@ void TinymovrJoint::send_cb(uint32_t arbitration_id, uint8_t *data, uint8_t data
 bool TinymovrJoint::recv_cb(uint32_t arbitration_id, uint8_t *data, uint8_t *data_size)
 {
     (void)arbitration_id;
-    if (!tmcan.read_frame(hw_node_ids_[i], CMD_GET_ENC_ESTIMATES, data, &data_size))
+    if (!tmcan.read_frame(arbitration_id, 0, data, &data_size))
     {
         throw "CAN read error";
     }
 }
 // ---------------------------------------------------------------
+
+}

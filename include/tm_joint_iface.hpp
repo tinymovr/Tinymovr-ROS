@@ -6,6 +6,9 @@
 #include <hardware_interface/robot_hw.h>
 #include <ros/ros.h>
 #include <tinymovr_can.hpp>
+#include <tinymovr/tinymovr.hpp>
+
+using namespace std;
 
 namespace tinymovr_ros
 {
@@ -23,6 +26,8 @@ protected:
     void send_cb(uint32_t arbitration_id, uint8_t *data, uint8_t data_size, bool rtr);
     bool recv_cb(uint32_t arbitration_id, uint8_t *data, uint8_t *data_size);
 
+    TinymovrCAN tmcan;
+    
     ros::NodeHandle nh_;
     
     hardware_interface::JointStateInterface joint_state_interface;
