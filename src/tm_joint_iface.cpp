@@ -97,15 +97,15 @@ bool TinymovrJoint::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh)
         joint_state_interface.registerHandle(state_handle);
         
         // connect and register the joint position interface
-        hardware_interface::JointHandle pos_handle(joint_state_interface.getHandle("Joint"), &cmd_pos_[i]);
+        hardware_interface::JointHandle pos_handle(joint_state_interface.getHandle("Joint"), &joint_position_command[i]);
         joint_pos_interface.registerHandle(pos_handle);
         
         // connect and register the joint velocity interface
-        hardware_interface::JointHandle vel_handle(joint_state_interface.getHandle("Joint"), &cmd_vel_[i]);
+        hardware_interface::JointHandle vel_handle(joint_state_interface.getHandle("Joint"), &joint_velocity_command[i]);
         joint_vel_interface.registerHandle(vel_handle);
         
         // connect and register the joint effort interface
-        hardware_interface::JointHandle eff_handle(joint_state_interface.getHandle("Joint"), &cmd_eff_[i]);
+        hardware_interface::JointHandle eff_handle(joint_state_interface.getHandle("Joint"), &joint_effort_command[i]);
         joint_eff_interface.registerHandle(eff_handle);
     }
 
@@ -117,7 +117,7 @@ bool TinymovrJoint::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh)
     return true;
 }
 
-bool TinymovrJoint::read(const ros::Duration& dt)
+bool TinymovrJoint::read(const ros::Time& time, const ros::Duration& period)
 {
     try {
         for (int i=0; i<servos_.size(); i++)
@@ -135,7 +135,7 @@ bool TinymovrJoint::read(const ros::Duration& dt)
     }
 }
 
-bool TinymovrJoint::write()
+bool TinymovrJoint::write(const ros::Time& time, const ros::Duration& period)
 {
     try {
         for (int i=0; i<servos_.size(); i++)
@@ -145,6 +145,7 @@ bool TinymovrJoint::write()
             servos[i].controller.current.set_Iq_setpoint(joint_effort_command[i]);
         }
         return true;
+    }
     catch(const std::exception& e)
     {
         ROS_ERROR_STREAM("Error while reading Tinymovr CAN:\n" << e.what());
