@@ -131,8 +131,7 @@ include_directories(
 #   src/${PROJECT_NAME}/tinymovr_ros.cpp
 # )
 
-add_library(${PROJECT_NAME}_hw_iface src/socketcan_cpp.cpp src/tinymovr_can.cpp src/tm_hw_iface.cpp)
-add_library(${PROJECT_NAME}_diffbot_hw_iface src/socketcan_cpp.cpp src/tinymovr_can.cpp src/diffbot_hw_iface.cpp)
+add_library(${PROJECT_NAME}_joint_iface src/socketcan_cpp.cpp src/tinymovr_can.cpp src/tm_joint_iface.cpp)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -142,8 +141,7 @@ add_library(${PROJECT_NAME}_diffbot_hw_iface src/socketcan_cpp.cpp src/tinymovr_
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(${PROJECT_NAME}_node src/tm_hw_iface_node.cpp)
-add_executable(${PROJECT_NAME}_diffbot_node src/diffbot_hw_iface_node.cpp)
+add_executable(${PROJECT_NAME}_node src/tm_joint_iface_node.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -157,12 +155,7 @@ add_executable(${PROJECT_NAME}_diffbot_node src/diffbot_hw_iface_node.cpp)
 
 # Specify libraries to link a library or executable target against
 target_link_libraries(${PROJECT_NAME}_node
-  ${PROJECT_NAME}_hw_iface
-  ${catkin_LIBRARIES}
-)
-
-target_link_libraries(${PROJECT_NAME}_diffbot_node
-  ${PROJECT_NAME}_diffbot_hw_iface
+  ${PROJECT_NAME}_joint_iface
   ${catkin_LIBRARIES}
 )
 
