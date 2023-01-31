@@ -40,7 +40,7 @@ bool TinymovrCAN::read_frame(uint32_t node_id, uint32_t ep_id, uint8_t* data, ui
 
 bool TinymovrCAN::write_frame(uint32_t node_id, uint32_t ep_id, const uint8_t *data, uint8_t data_len)
 {
-    return write_frame(make_arbitration_id(node_id, ep_id));
+    return write_frame(make_arbitration_id(node_id, ep_id), data, data_len);
 }
 
 bool TinymovrCAN::write_frame(uint32_t arbitration_id, const uint8_t *data, uint8_t data_len)
