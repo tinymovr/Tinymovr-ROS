@@ -5,7 +5,7 @@
 
 #include <linux/can.h>
 #include <linux/can/raw.h>
-#include <tinymovr/tinymovr.hpp>
+
 #include <tm_joint_iface.hpp>
 
 using namespace std;

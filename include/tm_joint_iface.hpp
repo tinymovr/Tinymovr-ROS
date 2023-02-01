@@ -6,6 +6,7 @@
 #include <hardware_interface/robot_hw.h>
 #include <ros/ros.h>
 #include <tinymovr_can.hpp>
+#include <tinymovr/tinymovr.hpp>
 
 using namespace std;
 
