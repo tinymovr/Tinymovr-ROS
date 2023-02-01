@@ -11,7 +11,7 @@ int main(int argc, char **argv)
     spinner.start();
     ros::NodeHandle nh;
     tinymovr_ros::TinymovrJoint tm_joint;
-    bool init_success = hw.init(nh, nh);
+    bool init_success = tm_joint.init(nh, nh);
 
     controller_manager::ControllerManager cm(&hw, nh);
 
