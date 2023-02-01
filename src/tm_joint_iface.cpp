@@ -116,39 +116,35 @@ bool TinymovrJoint::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh)
     return true;
 }
 
-bool TinymovrJoint::read(const ros::Time& time, const ros::Duration& period)
+void TinymovrJoint::read(const ros::Time& time, const ros::Duration& period)
 {
     try {
-        for (int i=0; i<servos_.size(); i++)
+        for (int i=0; i<servos.size(); i++)
         {
             joint_position_state[i] = servos[i].encoder.get_position_estimate();
             joint_velocity_state[i] = servos[i].encoder.get_velocity_estimate();
             joint_effort_state[i] = servos[i].controller.current.get_Iq_estimate();
         }
-        return true;
     }
     catch(const std::exception& e)
     {
         ROS_ERROR_STREAM("Error while reading Tinymovr CAN:\n" << e.what());
-        return false;
     }
 }
 
-bool TinymovrJoint::write(const ros::Time& time, const ros::Duration& period)
+void TinymovrJoint::write(const ros::Time& time, const ros::Duration& period)
 {
     try {
-        for (int i=0; i<servos_.size(); i++)
+        for (int i=0; i<servos.size(); i++)
         {
             servos[i].controller.position.set_setpoint(joint_position_command[i]);
             servos[i].controller.velocity.set_setpoint(joint_velocity_command[i]);
             servos[i].controller.current.set_Iq_setpoint(joint_effort_command[i]);
         }
-        return true;
     }
     catch(const std::exception& e)
     {
         ROS_ERROR_STREAM("Error while reading Tinymovr CAN:\n" << e.what());
-        return false;
     }
 }
 
