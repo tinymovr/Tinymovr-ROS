@@ -1,7 +1,9 @@
-joints:
-  names:
-    - joint1
-    - joint2
-  ids:
-    - 1
-    - 2
+tinymovr_joint_iface:
+  joints:
+    arm_1:
+      # hardware ID of the actuator
+      id: 2
+      offset: 3.14159265359
+      # offset to be added, in radians, to the position of an actuator
+      #max-speed: 4.0 # in rad
+      command_interface: velocity

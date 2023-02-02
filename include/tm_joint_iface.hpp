@@ -1,10 +1,15 @@
 
 #pragma once
 
+// ROS
+#include <ros/ros.h>
+#include <XmlRpcException.h>
+#include <XmlRpcValue.h>
+
 #include <hardware_interface/joint_command_interface.h>
 #include <hardware_interface/joint_state_interface.h>
 #include <hardware_interface/robot_hw.h>
-#include <ros/ros.h>
+
 #include <tinymovr_can.hpp>
 #include <tinymovr/tinymovr.hpp>
 
@@ -42,6 +47,7 @@ protected:
     std::vector<double> joint_effort_state;
 
     std::vector<Tinymovr> servos;
+
 };
 
 }

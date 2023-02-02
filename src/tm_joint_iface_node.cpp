@@ -5,7 +5,7 @@
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "tinymovr_joint_iface_node");
+    ros::init(argc, argv, "tinymovr_joint_iface");
    
     ros::AsyncSpinner spinner(1);
     spinner.start();

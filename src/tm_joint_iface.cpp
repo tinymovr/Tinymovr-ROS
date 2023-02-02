@@ -63,10 +63,33 @@ bool TinymovrJoint::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh)
 {
     tmcan.init();
 
-    //get joint names and num of joint
-    robot_hw_nh.getParam("joints/names", joint_name);
-    robot_hw_nh.getParam("joints/ids", joint_id);
-    num_joints = joint_name.size();
+    XmlRpc::XmlRpcValue servos_param;
+
+    // build servo instances from configuration
+    if (got_all_params &= robot_hw_nh.getParam("joints", servos_param)) {
+            ROS_ASSERT(servos_param.getType() == XmlRpc::XmlRpcValue::TypeStruct);
+        try {
+            for (XmlRpc::XmlRpcValue::ValueStruct::const_iterator it = servos_param.begin(); it != servos_param.end(); ++it) {
+
+                ROS_DEBUG_STREAM("servo: " << (std::string)(it->first));
+
+                id_t id;
+                if (it->second.hasMember("id"))
+                {
+                    id = static_cast<int>(servos_param[it->first]["id"]);
+                    ROS_DEBUG_STREAM("\tid: " << (int)id);
+                    servos.push_back(Tinymovr(id, &send_cb, &recv_cb));
+                }
+                else
+                {
+                    ROS_ERROR_STREAM("servo " << it->first << " has no associated servo ID.");
+                    continue;
+                }
+            }
+        }
+    }
+
+    num_joints = servos_param.size();
 
     joint_position_command.resize(num_joints, 0.0);
     joint_velocity_command.resize(num_joints, 0.0);
@@ -78,7 +101,6 @@ bool TinymovrJoint::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh)
     // initialize servos with correct mode
     for (int i=0; i<num_joints; i++)
     {
-        servos.push_back(Tinymovr(joint_id[i], &send_cb, &recv_cb));
         ROS_ASSERT((servos[i].encoder.get_calibrated() == true) && (servos[i].motor.get_calibrated() == true));
         servos[i].controller.set_state(2);
         servos[i].controller.set_mode(2);
@@ -86,6 +108,7 @@ bool TinymovrJoint::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh)
         ROS_ASSERT((servos[i].controller.get_state() == 2) && (servos[i].controller.get_mode() == 2));
     }
 
+    // register state interfaces
     for (int i=0; i<num_joints; i++)
     {
         // connect and register the joint state interface
