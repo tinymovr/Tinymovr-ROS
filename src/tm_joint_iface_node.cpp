@@ -13,7 +13,7 @@ int main(int argc, char **argv)
     tinymovr_ros::TinymovrJoint tm_joint;
     bool init_success = tm_joint.init(nh, nh);
 
-    controller_manager::ControllerManager cm(&hw, nh);
+    controller_manager::ControllerManager cm(&tm_joint, nh);
 
     ros::Rate rate(100); // 100Hz update rate
 
