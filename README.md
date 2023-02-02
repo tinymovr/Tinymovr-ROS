@@ -1,8 +1,15 @@
+__Tinymovr ROS Hardware Interface__
 
-https://catkin-tools.readthedocs.io/en/latest/installing.html
+ROS Hardware interface for working with Tinymovr motor controllers.
 
-https://www.howtoinstall.me/ubuntu/18-04/liburdfdom-headers-dev/
+__Useful Resources__
 
-https://github.com/siposcsaba89/socketcan-cpp
+These are not directly related to this repo, but were useful when trying to install ROS in a Raspbeery Pi
 
-https://stackoverflow.com/questions/17808084/fatal-error-libudev-h-no-such-file-or-directory
+Installing Catkin Tools: https://catkin-tools.readthedocs.io/en/latest/installing.html
+
+Installing liburdfdom: https://www.howtoinstall.me/ubuntu/18-04/liburdfdom-headers-dev/
+
+Socketcan library: https://github.com/siposcsaba89/socketcan-cpp
+
+Issue with libudev: https://stackoverflow.com/questions/17808084/fatal-error-libudev-h-no-such-file-or-directory
