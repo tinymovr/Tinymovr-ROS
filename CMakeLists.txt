@@ -122,16 +122,33 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-  include include/tinymovr
+  include
+  include/tinymovr
   ${catkin_INCLUDE_DIRS}
 )
+
+set(TINYMOVR_SOURCES
+  src/tinymovr/can.cpp
+  src/tinymovr/comms.cpp
+  src/tinymovr/controller.cpp
+  src/tinymovr/current.cpp
+  src/tinymovr/encoder.cpp
+  src/tinymovr/motor.cpp
+  src/tinymovr/position.cpp
+  src/tinymovr/scheduler.cpp
+  src/tinymovr/tinymovr.cpp
+  src/tinymovr/traj_planner.cpp
+  src/tinymovr/velocity.cpp
+  src/tinymovr/voltage.cpp
+  src/tinymovr/watchdog.cpp
+  )
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
 #   src/${PROJECT_NAME}/tinymovr_ros.cpp
 # )
 
-add_library(${PROJECT_NAME}_joint_iface src/socketcan_cpp.cpp src/tinymovr_can.cpp src/tm_joint_iface.cpp)
+add_library(${PROJECT_NAME}_joint_iface ${TINYMOVR_SOURCES} src/socketcan_cpp.cpp src/tinymovr_can.cpp src/tm_joint_iface.cpp)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
