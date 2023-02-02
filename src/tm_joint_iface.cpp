@@ -57,6 +57,8 @@ bool recv_cb(uint32_t arbitration_id, uint8_t *data, uint8_t *data_size)
 
 TinymovrJoint::TinymovrJoint() {}
 
+TinymovrJoint::~TinymovrJoint() {}
+
 bool TinymovrJoint::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh)
 {
     tmcan.init();
