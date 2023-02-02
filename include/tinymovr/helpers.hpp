@@ -82,6 +82,12 @@ inline size_t write_le<uint8_t>(uint8_t value, uint8_t* buffer) {
 }
 
 template<>
+inline size_t write_le<int8_t>(int8_t value, uint8_t* buffer) {
+    buffer[0] = value;
+    return 1;
+}
+
+template<>
 inline size_t write_le<uint16_t>(uint16_t value, uint8_t* buffer) {
     buffer[0] = (value >> 0) & 0xff;
     buffer[1] = (value >> 8) & 0xff;
@@ -134,9 +140,22 @@ inline size_t read_le<bool>(bool* value, const uint8_t* buffer) {
 }
 
 template<>
+inline size_t read_le<int8_t>(int8_t* value, const uint8_t* buffer) {
+    *value = buffer[0];
+    return 1;
+}
+
+template<>
 inline size_t read_le<uint8_t>(uint8_t* value, const uint8_t* buffer) {
     *value = buffer[0];
     return 1;
+}
+
+template<>
+inline size_t read_le<int16_t>(int16_t* value, const uint8_t* buffer) {
+    *value = (static_cast<int16_t>(buffer[0]) << 0) |
+             (static_cast<int16_t>(buffer[1]) << 8);
+    return 2;
 }
 
 template<>
