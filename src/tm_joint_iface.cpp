@@ -61,9 +61,10 @@ TinymovrJoint::~TinymovrJoint() {}
 
 bool TinymovrJoint::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh)
 {
-    tmcan.init();
-
+    
     XmlRpc::XmlRpcValue servos_param;
+
+    bool got_all_params = true;
 
     // build servo instances from configuration
     if (got_all_params &= robot_hw_nh.getParam("joints", servos_param)) {
@@ -87,6 +88,13 @@ bool TinymovrJoint::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh)
                 }
             }
         }
+        catch (XmlRpc::XmlRpcException& e) 
+        {
+            ROS_FATAL_STREAM("Exception raised by XmlRpc while reading the "
+                << "configuration: " << e.getMessage() << ".\n"
+                << "Please check the configuration, particularly parameter types.");
+            return false;
+        }
     }
 
     num_joints = servos_param.size();
@@ -97,6 +105,8 @@ bool TinymovrJoint::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh)
     joint_position_state.resize(num_joints, 0.0);
     joint_velocity_state.resize(num_joints, 0.0);
     joint_effort_state.resize(num_joints, 0.0);
+
+    tmcan.init();
 
     // initialize servos with correct mode
     for (int i=0; i<num_joints; i++)
