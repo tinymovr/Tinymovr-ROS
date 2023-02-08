@@ -99,6 +99,13 @@ float Controller_::set_pos_vel_setpoints(float pos_setpoint, float vel_setpoint)
     data_len += sizeof(vel_setpoint);
 
     this->send(40, this->_data, data_len, false);
+    float value = 0;
+    this->send(17, this->_data, 0, true);
+    if (this->recv(17, this->_data, &(this->_dlc), RECV_DELAY_US)) 
+    {
+        read_le(&value, this->_data);
+    }
+    return value;
 }
 
 
