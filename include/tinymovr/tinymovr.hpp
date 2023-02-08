@@ -17,7 +17,7 @@
 #include <traj_planner.hpp>
 #include <watchdog.hpp>
 
-static uint32_t avlos_proto_hash = 3273002564;
+static uint32_t avlos_proto_hash = 2510016821;
 
 enum errors_flags
 {

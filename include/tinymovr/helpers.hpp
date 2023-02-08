@@ -49,7 +49,6 @@ class Node {
 
     bool recv(uint8_t cmd_id, uint8_t *data, uint8_t *data_size, uint16_t delay_us)
     {
-#if defined ARDUINO
         // A delay of a few 100s of us needs to be inserted
         // to ensure the response has been transmitted.
         // TODO: Better handle this using an interrupt.
@@ -57,7 +56,6 @@ class Node {
         {
             delayMicroseconds(delay_us);
         }
-#endif
         const uint8_t arb_id = this->get_arbitration_id(cmd_id);
         return this->recv_cb(arb_id, data, data_size);
     }
@@ -89,6 +87,13 @@ inline size_t write_le<int8_t>(int8_t value, uint8_t* buffer) {
 
 template<>
 inline size_t write_le<uint16_t>(uint16_t value, uint8_t* buffer) {
+    buffer[0] = (value >> 0) & 0xff;
+    buffer[1] = (value >> 8) & 0xff;
+    return 2;
+}
+
+template<>
+inline size_t write_le<int16_t>(int16_t value, uint8_t* buffer) {
     buffer[0] = (value >> 0) & 0xff;
     buffer[1] = (value >> 8) & 0xff;
     return 2;
@@ -140,26 +145,26 @@ inline size_t read_le<bool>(bool* value, const uint8_t* buffer) {
 }
 
 template<>
-inline size_t read_le<int8_t>(int8_t* value, const uint8_t* buffer) {
-    *value = buffer[0];
-    return 1;
-}
-
-template<>
 inline size_t read_le<uint8_t>(uint8_t* value, const uint8_t* buffer) {
     *value = buffer[0];
     return 1;
 }
 
 template<>
-inline size_t read_le<int16_t>(int16_t* value, const uint8_t* buffer) {
-    *value = (static_cast<int16_t>(buffer[0]) << 0) |
-             (static_cast<int16_t>(buffer[1]) << 8);
-    return 2;
+inline size_t read_le<int8_t>(int8_t* value, const uint8_t* buffer) {
+    *value = buffer[0];
+    return 1;
 }
 
 template<>
 inline size_t read_le<uint16_t>(uint16_t* value, const uint8_t* buffer) {
+    *value = (static_cast<uint16_t>(buffer[0]) << 0) |
+             (static_cast<uint16_t>(buffer[1]) << 8);
+    return 2;
+}
+
+template<>
+inline size_t read_le<int16_t>(int16_t* value, const uint8_t* buffer) {
     *value = (static_cast<uint16_t>(buffer[0]) << 0) |
              (static_cast<uint16_t>(buffer[1]) << 8);
     return 2;
