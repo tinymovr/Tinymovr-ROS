@@ -97,6 +97,15 @@ bool TinymovrJoint::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh)
         }
     }
 
+    if (!got_all_params) {
+        std::string sub_namespace = robot_hw_nh.getNamespace();
+        std::string error_message = "One or more of the following parameters "
+                                    "were not set:\n"
+            + sub_namespace + "/servos";
+        ROS_FATAL_STREAM(error_message);
+        return false;
+    }
+
     num_joints = servos_param.size();
 
     joint_position_command.resize(num_joints, 0.0);
@@ -113,7 +122,7 @@ bool TinymovrJoint::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh)
     {
         ROS_ASSERT((servos[i].encoder.get_calibrated() == true) && (servos[i].motor.get_calibrated() == true));
         servos[i].controller.set_state(2);
-        servos[i].controller.set_mode(2);
+        servos[i].controller.set_mode(_str2mode());
         ros::Duration(0.001).sleep();
         ROS_ASSERT((servos[i].controller.get_state() == 2) && (servos[i].controller.get_mode() == 2));
     }
@@ -151,6 +160,25 @@ bool TinymovrJoint::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh)
     return true;
 }
 
+ /** Convert a string to an operating mode
+        @param mode_string name of the operating mode (current or effort, velocity or position)
+        @return mode index corresponding to the index of the mode
+    **/
+    template <class Protocol>
+    uint8_t TinymovrJoint::_str2mode(const std::string& mode_string)
+    {
+        if ("current" == mode_string || "effort" == mode_string)
+            return 0;
+        if ("velocity" == mode_string)
+            return 1;
+        else if ("position" == mode_string)
+            return 2;
+        else {
+            ROS_ERROR_STREAM("The command mode " << mode_string << " is not available");
+            return 0;
+        }
+    }
+
 void TinymovrJoint::read(const ros::Time& time, const ros::Duration& period)
 {
     try {
@@ -179,7 +207,7 @@ void TinymovrJoint::write(const ros::Time& time, const ros::Duration& period)
     }
     catch(const std::exception& e)
     {
-        ROS_ERROR_STREAM("Error while reading Tinymovr CAN:\n" << e.what());
+        ROS_ERROR_STREAM("Error while writing Tinymovr CAN:\n" << e.what());
     }
 }
 

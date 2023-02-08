@@ -48,6 +48,7 @@ protected:
 
     std::vector<Tinymovr> servos;
 
+    uint8_t _str2mode(const std::string& mode_string);
 };
 
 }
