@@ -165,7 +165,6 @@ bool TinymovrJoint::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh)
         @param mode_string name of the operating mode (current or effort, velocity or position)
         @return mode index corresponding to the index of the mode
     **/
-    template <class Protocol>
     uint8_t TinymovrJoint::_str2mode(std::string& mode_string)
     {
         if ("current" == mode_string || "effort" == mode_string)
