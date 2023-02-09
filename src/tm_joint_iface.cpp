@@ -80,7 +80,7 @@ bool TinymovrJoint::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh)
                     id = static_cast<int>(servos_param[it->first]["id"]);
                     ROS_DEBUG_STREAM("\tid: " << (int)id);
                     servos.push_back(Tinymovr(id, &send_cb, &recv_cb));
-                    servo_modes.push_back(servos_param[it->first]["command_interface"])
+                    servo_modes.push_back(servos_param[it->first]["command_interface"]);
                 }
                 else
                 {
@@ -166,7 +166,7 @@ bool TinymovrJoint::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh)
         @return mode index corresponding to the index of the mode
     **/
     template <class Protocol>
-    uint8_t TinymovrJoint::_str2mode(const std::string& mode_string)
+    uint8_t TinymovrJoint::_str2mode(std::string& mode_string)
     {
         if ("current" == mode_string || "effort" == mode_string)
             return 0;
