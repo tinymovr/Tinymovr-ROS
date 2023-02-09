@@ -80,6 +80,7 @@ bool TinymovrJoint::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh)
                     id = static_cast<int>(servos_param[it->first]["id"]);
                     ROS_DEBUG_STREAM("\tid: " << (int)id);
                     servos.push_back(Tinymovr(id, &send_cb, &recv_cb));
+                    servo_modes.push_back(servos_param[it->first]["command_interface"])
                 }
                 else
                 {
@@ -122,7 +123,7 @@ bool TinymovrJoint::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh)
     {
         ROS_ASSERT((servos[i].encoder.get_calibrated() == true) && (servos[i].motor.get_calibrated() == true));
         servos[i].controller.set_state(2);
-        servos[i].controller.set_mode(_str2mode());
+        servos[i].controller.set_mode(_str2mode(servo_modes[i]));
         ros::Duration(0.001).sleep();
         ROS_ASSERT((servos[i].controller.get_state() == 2) && (servos[i].controller.get_mode() == 2));
     }
