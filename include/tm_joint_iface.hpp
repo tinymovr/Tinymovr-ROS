@@ -49,7 +49,7 @@ protected:
     std::vector<Tinymovr> servos;
     std::vector<std::string> servo_modes;
 
-    uint8_t _str2mode(const std::string& mode_string);
+    uint8_t _str2mode(std::string& mode_string);
 };
 
 }
