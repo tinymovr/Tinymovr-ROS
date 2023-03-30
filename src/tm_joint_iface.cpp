@@ -44,7 +44,7 @@ void send_cb(uint32_t arbitration_id, uint8_t *data, uint8_t data_size, bool rtr
  *  data: pointer to the data array to be received
  *  data_size: pointer to the variable that will hold the size of received data
  */
-bool recv_cb(uint32_t arbitration_id, uint8_t *data, uint8_t *data_size)
+bool recv_cb(uint32_t *arbitration_id, uint8_t *data, uint8_t *data_size)
 {
     (void)arbitration_id;
     if (!tmcan.read_frame(arbitration_id, 0, data, data_size))
@@ -52,6 +52,18 @@ bool recv_cb(uint32_t arbitration_id, uint8_t *data, uint8_t *data_size)
         throw "CAN read error";
     }
     return true;
+}
+
+/*
+ * Function:  delay_us_cb 
+ * --------------------
+ *  Is called to perform a delay
+ *
+ *  us: the microseconds to wait for
+ */
+void delay_us_cb(uint32_t us)
+{
+  ros::Duration(us * 1e-6).sleep();
 }
 // ---------------------------------------------------------------
 
@@ -79,7 +91,7 @@ bool TinymovrJoint::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh)
                 {
                     id = static_cast<int>(servos_param[it->first]["id"]);
                     ROS_DEBUG_STREAM("\tid: " << (int)id);
-                    servos.push_back(Tinymovr(id, &send_cb, &recv_cb));
+                    servos.push_back(Tinymovr(id, &send_cb, &recv_cb, &delay_us_cb));
                     servo_modes.push_back(servos_param[it->first]["command_interface"]);
                 }
                 else
