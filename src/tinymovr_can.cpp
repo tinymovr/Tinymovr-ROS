@@ -18,7 +18,7 @@ void TinymovrCAN::init()
     }
 }
 
-bool TinymovrCAN::read_frame(uint32_t *arbitration_id uint8_t *data, uint8_t *data_len)
+bool TinymovrCAN::read_frame(uint32_t *arbitration_id, uint8_t *data, uint8_t *data_len)
 {
     scpp::CanFrame fr;
 
