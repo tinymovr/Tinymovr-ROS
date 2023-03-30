@@ -18,12 +18,12 @@ class Controller_ : Node
 {
     public:
 
-        Controller_(uint8_t _can_node_id, send_callback _send_cb, recv_callback _recv_cb):
-            Node(_can_node_id, _send_cb, _recv_cb)
-            , position(_can_node_id, _send_cb, _recv_cb)
-            , velocity(_can_node_id, _send_cb, _recv_cb)
-            , current(_can_node_id, _send_cb, _recv_cb)
-            , voltage(_can_node_id, _send_cb, _recv_cb) {};
+        Controller_(uint8_t _can_node_id, send_callback _send_cb, recv_callback _recv_cb, delay_us_callback _delay_us_cb):
+            Node(_can_node_id, _send_cb, _recv_cb, _delay_us_cb)
+            , position(_can_node_id, _send_cb, _recv_cb, _delay_us_cb)
+            , velocity(_can_node_id, _send_cb, _recv_cb, _delay_us_cb)
+            , current(_can_node_id, _send_cb, _recv_cb, _delay_us_cb)
+            , voltage(_can_node_id, _send_cb, _recv_cb, _delay_us_cb) {};
         uint8_t get_state(void);
         void set_state(uint8_t value);
         uint8_t get_mode(void);

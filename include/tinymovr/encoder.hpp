@@ -14,8 +14,8 @@ class Encoder_ : Node
 {
     public:
 
-        Encoder_(uint8_t _can_node_id, send_callback _send_cb, recv_callback _recv_cb):
-            Node(_can_node_id, _send_cb, _recv_cb) {};
+        Encoder_(uint8_t _can_node_id, send_callback _send_cb, recv_callback _recv_cb, delay_us_callback _delay_us_cb):
+            Node(_can_node_id, _send_cb, _recv_cb, _delay_us_cb) {};
         float get_position_estimate(void);
         float get_velocity_estimate(void);
         uint8_t get_type(void);

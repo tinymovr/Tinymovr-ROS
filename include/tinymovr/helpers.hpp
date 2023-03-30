@@ -24,18 +24,20 @@
 #define RECV_DELAY_US (160.0f)
 
 typedef void (*send_callback)(uint32_t arbitration_id, uint8_t *data, uint8_t dlc, bool rtr);
-typedef bool (*recv_callback)(uint32_t arbitration_id, uint8_t *data, uint8_t *dlc);
+typedef bool (*recv_callback)(uint32_t *arbitration_id, uint8_t *data, uint8_t *dlc);
+typedef void (*delay_us_callback)(uint32_t us);
 
 class Node {
     public:
 
-    Node(uint8_t _can_node_id, send_callback _send_cb, recv_callback _recv_cb):
-        can_node_id(_can_node_id), send_cb(_send_cb), recv_cb(_recv_cb) {}
+    Node(uint8_t _can_node_id, send_callback _send_cb, recv_callback _recv_cb, delay_us_callback _delay_us_cb):
+        can_node_id(_can_node_id), send_cb(_send_cb), recv_cb(_recv_cb), delay_us_cb(_delay_us_cb) {}
 
     protected:
     uint8_t can_node_id;
     send_callback send_cb;
     recv_callback recv_cb;
+    delay_us_callback delay_us_cb;
     uint8_t _data[8];
     uint8_t _dlc;
     uint8_t get_arbitration_id(uint8_t cmd_id) {
@@ -49,17 +51,27 @@ class Node {
 
     bool recv(uint8_t cmd_id, uint8_t *data, uint8_t *data_size, uint16_t delay_us)
     {
-#if defined ARDUINO
+        uint32_t _arbitration_id;
+        uint8_t _data[8];
+        uint8_t _data_size;
         // A delay of a few 100s of us needs to be inserted
         // to ensure the response has been transmitted.
         // TODO: Better handle this using an interrupt.
         if (delay_us > 0)
         {
-            delayMicroseconds(delay_us);
+           this->delay_us_cb(delay_us);
         }
-#endif
         const uint8_t arb_id = this->get_arbitration_id(cmd_id);
-        return this->recv_cb(arb_id, data, data_size);
+        while (this->recv_cb(&_arbitration_id, _data, &_data_size))
+        {
+            if (_arbitration_id == arb_id)
+            {
+                memcpy(data, _data, _data_size);
+                *data_size = _data_size;
+                return true;
+            }
+        }
+        return false;
     }
 };
 

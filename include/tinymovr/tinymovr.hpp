@@ -17,7 +17,7 @@
 #include <traj_planner.hpp>
 #include <watchdog.hpp>
 
-static uint32_t avlos_proto_hash = 2510016821;
+static uint32_t avlos_proto_hash = 3273002564;
 
 enum errors_flags
 {
@@ -72,15 +72,15 @@ class Tinymovr : Node
 {
     public:
 
-        Tinymovr(uint8_t _can_node_id, send_callback _send_cb, recv_callback _recv_cb):
-            Node(_can_node_id, _send_cb, _recv_cb)
-            , scheduler(_can_node_id, _send_cb, _recv_cb)
-            , controller(_can_node_id, _send_cb, _recv_cb)
-            , comms(_can_node_id, _send_cb, _recv_cb)
-            , motor(_can_node_id, _send_cb, _recv_cb)
-            , encoder(_can_node_id, _send_cb, _recv_cb)
-            , traj_planner(_can_node_id, _send_cb, _recv_cb)
-            , watchdog(_can_node_id, _send_cb, _recv_cb) {};
+        Tinymovr(uint8_t _can_node_id, send_callback _send_cb, recv_callback _recv_cb, delay_us_callback _delay_us_cb):
+            Node(_can_node_id, _send_cb, _recv_cb, _delay_us_cb)
+            , scheduler(_can_node_id, _send_cb, _recv_cb, _delay_us_cb)
+            , controller(_can_node_id, _send_cb, _recv_cb, _delay_us_cb)
+            , comms(_can_node_id, _send_cb, _recv_cb, _delay_us_cb)
+            , motor(_can_node_id, _send_cb, _recv_cb, _delay_us_cb)
+            , encoder(_can_node_id, _send_cb, _recv_cb, _delay_us_cb)
+            , traj_planner(_can_node_id, _send_cb, _recv_cb, _delay_us_cb)
+            , watchdog(_can_node_id, _send_cb, _recv_cb, _delay_us_cb) {};
         uint32_t get_protocol_hash(void);
         uint32_t get_uid(void);
         float get_Vbus(void);

@@ -14,8 +14,8 @@ class Voltage_ : Node
 {
     public:
 
-        Voltage_(uint8_t _can_node_id, send_callback _send_cb, recv_callback _recv_cb):
-            Node(_can_node_id, _send_cb, _recv_cb) {};
+        Voltage_(uint8_t _can_node_id, send_callback _send_cb, recv_callback _recv_cb, delay_us_callback _delay_us_cb):
+            Node(_can_node_id, _send_cb, _recv_cb, _delay_us_cb) {};
         float get_Vq_setpoint(void);
 
 };

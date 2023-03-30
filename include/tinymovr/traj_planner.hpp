@@ -14,8 +14,8 @@ class Traj_planner_ : Node
 {
     public:
 
-        Traj_planner_(uint8_t _can_node_id, send_callback _send_cb, recv_callback _recv_cb):
-            Node(_can_node_id, _send_cb, _recv_cb) {};
+        Traj_planner_(uint8_t _can_node_id, send_callback _send_cb, recv_callback _recv_cb, delay_us_callback _delay_us_cb):
+            Node(_can_node_id, _send_cb, _recv_cb, _delay_us_cb) {};
         float get_max_accel(void);
         void set_max_accel(float value);
         float get_max_decel(void);
