@@ -40,14 +40,13 @@ void send_cb(uint32_t arbitration_id, uint8_t *data, uint8_t data_size, bool rtr
  * --------------------
  *  Is called to receive a CAN frame
  *
- *  arbitration_id: the frame arbitration id
+ *  arbitration_id: the frame arbitration id pointer
  *  data: pointer to the data array to be received
  *  data_size: pointer to the variable that will hold the size of received data
  */
 bool recv_cb(uint32_t *arbitration_id, uint8_t *data, uint8_t *data_size)
 {
-    (void)arbitration_id;
-    if (!tmcan.read_frame(arbitration_id, 0, data, data_size))
+    if (!tmcan.read_frame(arbitration_id, data, data_size))
     {
         throw "CAN read error";
     }

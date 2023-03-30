@@ -18,13 +18,8 @@ void TinymovrCAN::init()
     }
 }
 
-bool TinymovrCAN::read_frame(uint32_t node_id, uint32_t ep_id, uint8_t* data, uint8_t* data_len)
+bool TinymovrCAN::read_frame(uint32_t *arbitration_id uint8_t *data, uint8_t *data_len)
 {
-    if (scpp::STATUS_OK != write_frame(node_id, ep_id, 0, 0))
-    {
-        return false;
-    }
-
     scpp::CanFrame fr;
 
     if (scpp::STATUS_OK != socket_can.read(fr))
@@ -32,8 +27,9 @@ bool TinymovrCAN::read_frame(uint32_t node_id, uint32_t ep_id, uint8_t* data, ui
         return false;
     }
 
-    memcpy(data, fr.data, 8); // TODO: make safer
+    memcpy(data, fr.data, 8);
     *data_len = fr.len;
+    *arbitration_id = fr.id;
 
     return true;
 }
