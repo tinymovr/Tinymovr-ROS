@@ -14,6 +14,7 @@
 #else
 #include <cstdint>
 #include <cstddef>
+#include <cstring>
 #endif
 
 #if defined ARDUINO
