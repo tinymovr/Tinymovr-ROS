@@ -5,6 +5,7 @@
 
 #include <linux/can.h>
 #include <linux/can/raw.h>
+#include <stdexcept>
 
 #include <tm_joint_iface.hpp>
 
@@ -29,10 +30,14 @@ TinymovrCAN tmcan;
  */
 void send_cb(uint32_t arbitration_id, uint8_t *data, uint8_t data_size, bool rtr)
 {
+    ROS_DEBUG_STREAM("Attempting to write CAN frame with arbitration_id: " << arbitration_id);
+    
     if (!tmcan.write_frame(arbitration_id, data, data_size))
     {
-        throw "CAN write error";
+        throw std::runtime_error("CAN write error");
     }
+
+    ROS_DEBUG_STREAM("CAN frame with arbitration_id: " << arbitration_id << " written successfully.");
 }
 
 /*
@@ -46,10 +51,14 @@ void send_cb(uint32_t arbitration_id, uint8_t *data, uint8_t data_size, bool rtr
  */
 bool recv_cb(uint32_t *arbitration_id, uint8_t *data, uint8_t *data_size)
 {
+    ROS_DEBUG_STREAM("Attempting to read CAN frame...");
+
     if (!tmcan.read_frame(arbitration_id, data, data_size))
     {
-        throw "CAN read error";
+        throw std::runtime_error("CAN read error");
     }
+
+    ROS_DEBUG_STREAM("CAN frame with arbitration_id: " << *arbitration_id << " read successfully.");
     return true;
 }
 
@@ -78,7 +87,7 @@ bool TinymovrJoint::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh)
     bool got_all_params = true;
 
     // build servo instances from configuration
-    if (got_all_params &= robot_hw_nh.getParam("joints", servos_param)) {
+    if (got_all_params &= robot_hw_nh.getParam("/tinymovr_joint_iface/joints", servos_param)) {
             ROS_ASSERT(servos_param.getType() == XmlRpc::XmlRpcValue::TypeStruct);
         try {
             for (XmlRpc::XmlRpcValue::ValueStruct::const_iterator it = servos_param.begin(); it != servos_param.end(); ++it) {
@@ -112,8 +121,8 @@ bool TinymovrJoint::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh)
     if (!got_all_params) {
         std::string sub_namespace = robot_hw_nh.getNamespace();
         std::string error_message = "One or more of the following parameters "
-                                    "were not set:\n"
-            + sub_namespace + "/servos";
+                            "were not set:\n"
+            + sub_namespace + "/tinymovr_joint_iface/joints";
         ROS_FATAL_STREAM(error_message);
         return false;
     }

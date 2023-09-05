@@ -1,5 +1,7 @@
 
 #include <tinymovr_can.hpp>
+#include <ros/console.h>
+
 
 namespace tinymovr_ros
 {
@@ -18,29 +20,47 @@ void TinymovrCAN::init()
     }
 }
 
-bool TinymovrCAN::read_frame(uint32_t *arbitration_id, uint8_t *data, uint8_t *data_len)
+bool TinymovrCAN::read_frame(uint32_t* can_id, uint8_t* data, uint8_t* len)
 {
+    ROS_INFO("in read frame");
     scpp::CanFrame fr;
-
-    if (scpp::STATUS_OK != socket_can.read(fr))
+    scpp::SocketCanStatus read_status = socket_can.read(fr);
+    if (read_status == scpp::STATUS_OK)
     {
+        *can_id = fr.id;
+        *len = fr.len;
+        std::copy(fr.data, fr.data + fr.len, data);
+        ROS_DEBUG("Successfully read a CAN frame");
+        return true;
+    }
+    else
+    {
+        ROS_WARN("Failed to read a CAN frame. SocketCanStatus: %d", static_cast<int>(read_status));
+        switch(read_status)
+        {
+            case scpp::STATUS_READ_ERROR:
+                ROS_ERROR("SocketCan read error!");
+                break;
+            // Removed STATUS_TIMEOUT case
+            default:
+                ROS_ERROR("Unknown SocketCan error!");
+                break;
+        }
         return false;
     }
-
-    memcpy(data, fr.data, 8);
-    *data_len = fr.len;
-    *arbitration_id = fr.id;
-
-    return true;
 }
+
+
 
 bool TinymovrCAN::write_frame(uint32_t node_id, uint32_t ep_id, const uint8_t *data, uint8_t data_len)
 {
+    ROS_INFO("in write frame1");
     return write_frame(make_arbitration_id(node_id, ep_id), data, data_len);
 }
 
 bool TinymovrCAN::write_frame(uint32_t arbitration_id, const uint8_t *data, uint8_t data_len)
 {
+    ROS_INFO("in write frame2");
     scpp::CanFrame cf_to_write;
 
     cf_to_write.id = arbitration_id;
