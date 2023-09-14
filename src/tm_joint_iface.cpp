@@ -95,11 +95,13 @@ bool TinymovrJoint::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh)
                 ROS_DEBUG_STREAM("servo: " << (std::string)(it->first));
 
                 id_t id;
+                int delay_us;
                 if (it->second.hasMember("id"))
                 {
                     id = static_cast<int>(servos_param[it->first]["id"]);
+                    delay_us = static_cast<int>(servos_param[it->first]["delay_us"]);
                     ROS_DEBUG_STREAM("\tid: " << (int)id);
-                    servos.push_back(Tinymovr(id, &send_cb, &recv_cb, &delay_us_cb));
+                    servos.push_back(Tinymovr(id, &send_cb, &recv_cb, &delay_us_cb, delay_us));
                     servo_modes.push_back(servos_param[it->first]["command_interface"]);
                 }
                 else
