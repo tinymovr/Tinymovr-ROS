@@ -20,6 +20,31 @@ namespace tinymovr_ros
  
 scpp::SocketCan socket_can;
 
+const char* SocketCanErrorToString(scpp::SocketCanStatus status) {
+    switch (status) {
+        case scpp::STATUS_OK:
+            return "No error";
+        case scpp::STATUS_SOCKET_CREATE_ERROR:
+            return "SocketCAN socket creation error";
+        case scpp::STATUS_INTERFACE_NAME_TO_IDX_ERROR:
+            return "SocketCAN interface name to index error";
+        case scpp::STATUS_MTU_ERROR:
+            return "SocketCAN maximum transfer unit error";
+        case scpp::STATUS_CANFD_NOT_SUPPORTED:
+            return "SocketCAN flexible data-rate not supported on this interface";
+        case scpp::STATUS_ENABLE_FD_SUPPORT_ERROR:
+            return "Error enabling SocketCAN flexible-data-rate support";
+        case scpp::STATUS_WRITE_ERROR:
+            return "SocketCAN write error";
+        case scpp::STATUS_READ_ERROR:
+            return "SocketCAN read error";
+        case scpp::STATUS_BIND_ERROR:
+            return "SocketCAN bind error";
+        default:
+            return "Unknown SocketCAN error";
+    }
+}
+
 // ---------------------------------------------------------------
 /*
  * Function:  send_cb 
@@ -38,13 +63,16 @@ void send_cb(uint32_t arbitration_id, uint8_t *data, uint8_t data_length, bool r
     scpp::CanFrame cf_to_write;
 
     cf_to_write.id = arbitration_id;
+    if (rtr) {
+        cf_to_write.id |= CAN_RTR_FLAG; // Set RTR flag if rtr argument
+    }
     cf_to_write.len = data_length;
     for (int i = 0; i < data_length; ++i)
         cf_to_write.data[i] = data[i];
-    auto write_sc_status = socket_can.write(cf_to_write);
-    if (write_sc_status != scpp::STATUS_OK)
+    auto write_status = socket_can.write(cf_to_write);
+    if (write_status != scpp::STATUS_OK)
     {
-        throw std::runtime_error("CAN write error");
+        throw std::runtime_error(SocketCanErrorToString(write_status));
     }
     else
     {
@@ -69,7 +97,7 @@ bool recv_cb(uint32_t *arbitration_id, uint8_t *data, uint8_t *data_length)
     scpp::SocketCanStatus read_status = socket_can.read(fr);
     if (read_status == scpp::STATUS_OK)
     {
-        *arbitration_id = fr.id;
+        *arbitration_id = fr.id & CAN_EFF_MASK;
         *data_length = fr.len;
         std::copy(fr.data, fr.data + fr.len, data);
         ROS_DEBUG_STREAM("CAN frame with arbitration_id: " << *arbitration_id << " read successfully.");
@@ -77,16 +105,7 @@ bool recv_cb(uint32_t *arbitration_id, uint8_t *data, uint8_t *data_length)
     }
     else
     {
-        switch(read_status)
-        {
-            case scpp::STATUS_READ_ERROR:
-                throw std::runtime_error("SocketCAN read error");
-                break;
-            // Removed STATUS_TIMEOUT case
-            default:
-                throw std::runtime_error("Unknown SocketCAN error");
-                break;
-        }
+        throw std::runtime_error(SocketCanErrorToString(read_status));
         return false;
     }
 }
@@ -100,7 +119,7 @@ bool recv_cb(uint32_t *arbitration_id, uint8_t *data, uint8_t *data_length)
  */
 void delay_us_cb(uint32_t us)
 {
-  ros::Duration(us * 1e-6).sleep();
+    ros::Duration(us * 1e-6).sleep();
 }
 // ---------------------------------------------------------------
 
@@ -129,7 +148,7 @@ bool TinymovrJoint::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh)
                 {
                     id = static_cast<int>(servos_param[it->first]["id"]);
                     delay_us = static_cast<int>(servos_param[it->first]["delay_us"]);
-                    ROS_INFO_STREAM("\tid: " << (int)id);
+                    ROS_INFO_STREAM("\tid: " << id << " delay_us: " << delay_us);
                     servos.push_back(Tinymovr(id, &send_cb, &recv_cb, &delay_us_cb, delay_us));
                     servo_modes.push_back(servos_param[it->first]["command_interface"]);
                 }
@@ -181,8 +200,14 @@ bool TinymovrJoint::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh)
     // initialize servos with correct mode
     for (int i=0; i<num_joints; i++)
     {
+        ROS_INFO("Asserting spec compatibility");
+        ROS_ASSERT(servos[i].get_protocol_hash() == avlos_proto_hash);
         ROS_INFO("Asserting calibrated");
         ROS_ASSERT((servos[i].encoder.get_calibrated() == true) && (servos[i].motor.get_calibrated() == true));
+    }
+
+    for (int i=0; i<num_joints; i++)
+    { 
         ROS_INFO("Setting state");
         servos[i].controller.set_state(2);
         ROS_INFO("Setting mode");

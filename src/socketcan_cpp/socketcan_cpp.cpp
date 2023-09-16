@@ -128,7 +128,7 @@ namespace scpp
             return STATUS_BIND_ERROR;
         }
         struct can_filter rfilter[1];
-        rfilter[0].can_id   = 0x00000700;
+        rfilter[0].can_id   = ~0x00000700;
         rfilter[0].can_mask = 0x1FFFFF00;
         if (setsockopt(m_socket, SOL_CAN_RAW, CAN_RAW_FILTER, &rfilter, sizeof(rfilter)) < 0) {
             perror("setsockopt");
@@ -174,12 +174,10 @@ namespace scpp
     {
 #ifdef HAVE_SOCKETCAN_HEADERS
         struct canfd_frame frame;
-
-        // Read in a CAN frame
         auto num_bytes = ::read(m_socket, &frame, CANFD_MTU);
         if (num_bytes != CAN_MTU && num_bytes != CANFD_MTU)
         {
-            //perror("Can read error");
+            perror("Can read error");
             return STATUS_READ_ERROR;
         }
         msg.id = frame.can_id;
@@ -191,6 +189,7 @@ namespace scpp
 #endif
         return STATUS_OK;
     }
+
     SocketCanStatus SocketCan::close()
     {
 #ifdef HAVE_SOCKETCAN_HEADERS
@@ -202,6 +201,7 @@ namespace scpp
     {
         return m_interface;
     }
+
     SocketCan::~SocketCan()
     {
         close();
