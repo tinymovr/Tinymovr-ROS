@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ros/ros.h>
 
 #ifdef HAVE_SOCKETCAN_HEADERS
 #include <stdio.h>
@@ -50,12 +49,10 @@ unsigned char can_len2dlc(unsigned char len)
 
 namespace scpp
 {
-    SocketCan::SocketCan()
-    {
-    }
+    SocketCan::SocketCan() {}
+
     SocketCanStatus SocketCan::open(const std::string & can_interface, int32_t read_timeout_ms, SocketMode mode)
     {
-        ROS_INFO("Opening SocketCAN on interface: %s", can_interface.c_str());
         m_interface = can_interface;
         m_socket_mode = mode;
         m_read_timeout_ms = read_timeout_ms;
@@ -130,7 +127,6 @@ namespace scpp
             perror("bind");
             return STATUS_BIND_ERROR;
         }
-        ROS_INFO("SocketCAN opened successfully on interface: %s", can_interface.c_str());
         struct can_filter rfilter[1];
         rfilter[0].can_id   = 0x00000700;
         rfilter[0].can_mask = 0x1FFFFF00;
@@ -143,14 +139,17 @@ namespace scpp
 #endif
         return STATUS_OK;
     }
+
     SocketCanStatus SocketCan::write(const CanFrame & msg)
     {
-        ROS_INFO("Writing frame with ID: %d", msg.id);
 #ifdef HAVE_SOCKETCAN_HEADERS
         struct canfd_frame frame;
         memset(&frame, 0, sizeof(frame)); /* init CAN FD frame, e.g. LEN = 0 */
         //convert CanFrame to canfd_frame
         frame.can_id = msg.id;
+        if (msg.id > 0x7FF) {
+            frame.can_id |= CAN_EFF_FLAG; // Set extended frame format bit
+        }
         frame.len = msg.len;
         frame.flags = msg.flags;
         memcpy(frame.data, msg.data, msg.len);
@@ -165,15 +164,14 @@ namespace scpp
             perror("write");
             return STATUS_WRITE_ERROR;
         }
-        ROS_INFO("Frame with ID: %d written successfully.", msg.id);
 #else
         printf("Your operating system does not support socket can! \n");
 #endif
         return STATUS_OK;
     }
+
     SocketCanStatus SocketCan::read(CanFrame & msg)
     {
-        ROS_INFO("Reading frame...");
 #ifdef HAVE_SOCKETCAN_HEADERS
         struct canfd_frame frame;
 
@@ -181,11 +179,9 @@ namespace scpp
         auto num_bytes = ::read(m_socket, &frame, CANFD_MTU);
         if (num_bytes != CAN_MTU && num_bytes != CANFD_MTU)
         {
-            ROS_ERROR("Error reading frame.");
             //perror("Can read error");
             return STATUS_READ_ERROR;
         }
-        ROS_INFO("Read frame with ID: %d successfully.", msg.id);
         msg.id = frame.can_id;
         msg.len = frame.len;
         msg.flags = frame.flags;
@@ -197,11 +193,9 @@ namespace scpp
     }
     SocketCanStatus SocketCan::close()
     {
-        ROS_INFO("Closing SocketCAN on interface: %s", m_interface.c_str());
 #ifdef HAVE_SOCKETCAN_HEADERS
         ::close(m_socket);
 #endif
-        ROS_INFO("SocketCAN closed successfully.");
         return STATUS_OK;
     }
     const std::string & SocketCan::interfaceName() const

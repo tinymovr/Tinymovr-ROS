@@ -148,7 +148,7 @@ set(TINYMOVR_SOURCES
 #   src/${PROJECT_NAME}/tinymovr_ros.cpp
 # )
 
-add_library(${PROJECT_NAME}_joint_iface ${TINYMOVR_SOURCES} src/socketcan_cpp.cpp src/tinymovr_can.cpp src/tm_joint_iface.cpp)
+add_library(${PROJECT_NAME}_joint_iface ${TINYMOVR_SOURCES} src/socketcan_cpp.cpp src/tm_joint_iface.cpp)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries

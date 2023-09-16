@@ -2,7 +2,7 @@ tinymovr_joint_iface:
   joints:
     arm_1:
       # hardware ID of the actuator
-      id: 2
+      id: 1
       offset: 3.14159265359
       delay_us: 100
       # offset to be added, in radians, to the position of an actuator

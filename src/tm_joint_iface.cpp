@@ -7,6 +7,9 @@
 #include <linux/can/raw.h>
 #include <stdexcept>
 
+#include <ros/console.h>
+
+#include "socketcan_cpp/socketcan_cpp.hpp"
 #include <tm_joint_iface.hpp>
 
 using namespace std;
@@ -15,7 +18,7 @@ namespace tinymovr_ros
 {
 
  
-TinymovrCAN tmcan;
+scpp::SocketCan socket_can;
 
 // ---------------------------------------------------------------
 /*
@@ -25,19 +28,28 @@ TinymovrCAN tmcan;
  *
  *  arbitration_id: the frame arbitration id
  *  data: pointer to the data array to be transmitted
- *  data_size: the size of transmitted data
+ *  data_length: the size of transmitted data
  *  rtr: if the frame is of request transmit type (RTR)
  */
-void send_cb(uint32_t arbitration_id, uint8_t *data, uint8_t data_size, bool rtr)
+void send_cb(uint32_t arbitration_id, uint8_t *data, uint8_t data_length, bool rtr)
 {
     ROS_DEBUG_STREAM("Attempting to write CAN frame with arbitration_id: " << arbitration_id);
-    
-    if (!tmcan.write_frame(arbitration_id, data, data_size))
+
+    scpp::CanFrame cf_to_write;
+
+    cf_to_write.id = arbitration_id;
+    cf_to_write.len = data_length;
+    for (int i = 0; i < data_length; ++i)
+        cf_to_write.data[i] = data[i];
+    auto write_sc_status = socket_can.write(cf_to_write);
+    if (write_sc_status != scpp::STATUS_OK)
     {
         throw std::runtime_error("CAN write error");
     }
-
-    ROS_DEBUG_STREAM("CAN frame with arbitration_id: " << arbitration_id << " written successfully.");
+    else
+    {
+        ROS_DEBUG_STREAM("CAN frame with arbitration_id: " << arbitration_id << " written successfully.");
+    }
 }
 
 /*
@@ -47,19 +59,36 @@ void send_cb(uint32_t arbitration_id, uint8_t *data, uint8_t data_size, bool rtr
  *
  *  arbitration_id: the frame arbitration id pointer
  *  data: pointer to the data array to be received
- *  data_size: pointer to the variable that will hold the size of received data
+ *  data_length: pointer to the variable that will hold the size of received data
  */
-bool recv_cb(uint32_t *arbitration_id, uint8_t *data, uint8_t *data_size)
+bool recv_cb(uint32_t *arbitration_id, uint8_t *data, uint8_t *data_length)
 {
     ROS_DEBUG_STREAM("Attempting to read CAN frame...");
 
-    if (!tmcan.read_frame(arbitration_id, data, data_size))
+    scpp::CanFrame fr;
+    scpp::SocketCanStatus read_status = socket_can.read(fr);
+    if (read_status == scpp::STATUS_OK)
     {
-        throw std::runtime_error("CAN read error");
+        *arbitration_id = fr.id;
+        *data_length = fr.len;
+        std::copy(fr.data, fr.data + fr.len, data);
+        ROS_DEBUG_STREAM("CAN frame with arbitration_id: " << *arbitration_id << " read successfully.");
+        return true;
     }
-
-    ROS_DEBUG_STREAM("CAN frame with arbitration_id: " << *arbitration_id << " read successfully.");
-    return true;
+    else
+    {
+        switch(read_status)
+        {
+            case scpp::STATUS_READ_ERROR:
+                throw std::runtime_error("SocketCAN read error");
+                break;
+            // Removed STATUS_TIMEOUT case
+            default:
+                throw std::runtime_error("Unknown SocketCAN error");
+                break;
+        }
+        return false;
+    }
 }
 
 /*
@@ -92,7 +121,7 @@ bool TinymovrJoint::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh)
         try {
             for (XmlRpc::XmlRpcValue::ValueStruct::const_iterator it = servos_param.begin(); it != servos_param.end(); ++it) {
 
-                ROS_DEBUG_STREAM("servo: " << (std::string)(it->first));
+                ROS_INFO_STREAM("servo: " << (std::string)(it->first));
 
                 id_t id;
                 int delay_us;
@@ -100,7 +129,7 @@ bool TinymovrJoint::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh)
                 {
                     id = static_cast<int>(servos_param[it->first]["id"]);
                     delay_us = static_cast<int>(servos_param[it->first]["delay_us"]);
-                    ROS_DEBUG_STREAM("\tid: " << (int)id);
+                    ROS_INFO_STREAM("\tid: " << (int)id);
                     servos.push_back(Tinymovr(id, &send_cb, &recv_cb, &delay_us_cb, delay_us));
                     servo_modes.push_back(servos_param[it->first]["command_interface"]);
                 }
@@ -138,15 +167,28 @@ bool TinymovrJoint::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh)
     joint_velocity_state.resize(num_joints, 0.0);
     joint_effort_state.resize(num_joints, 0.0);
 
-    tmcan.init();
+    auto status = socket_can.open("can0");
+    if (scpp::STATUS_OK == status)
+    {
+        ROS_INFO("Socketcan opened successfully");
+    }
+    else
+    {
+        ROS_ERROR("Cant' open Socketcan: %d", status);
+        exit(1);
+    }
 
     // initialize servos with correct mode
     for (int i=0; i<num_joints; i++)
     {
+        ROS_INFO("Asserting calibrated");
         ROS_ASSERT((servos[i].encoder.get_calibrated() == true) && (servos[i].motor.get_calibrated() == true));
+        ROS_INFO("Setting state");
         servos[i].controller.set_state(2);
+        ROS_INFO("Setting mode");
         servos[i].controller.set_mode(_str2mode(servo_modes[i]));
         ros::Duration(0.001).sleep();
+        ROS_INFO("Asserting state and mode");
         ROS_ASSERT((servos[i].controller.get_state() == 2) && (servos[i].controller.get_mode() == 2));
     }
 

@@ -10,7 +10,6 @@
 #include <hardware_interface/joint_state_interface.h>
 #include <hardware_interface/robot_hw.h>
 
-#include <tinymovr_can.hpp>
 #include <tinymovr/tinymovr.hpp>
 
 using namespace std;
