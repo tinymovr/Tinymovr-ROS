@@ -1,10 +1,18 @@
 tinymovr_joint_iface:
   joints:
-    arm_1:
+    arm_2:
       # hardware ID of the actuator
       id: 2
       offset: 3.14159265359
-      delay_us: 1000
+      delay_us: 200
+      # offset to be added, in radians, to the position of an actuator
+      #max-speed: 4.0 # in rad
+      command_interface: velocity
+    arm_1:
+      # hardware ID of the actuator
+      id: 1
+      offset: 3.14159265359
+      delay_us: 200
       # offset to be added, in radians, to the position of an actuator
       #max-speed: 4.0 # in rad
       command_interface: velocity

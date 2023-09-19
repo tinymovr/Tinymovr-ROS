@@ -228,12 +228,18 @@ bool TinymovrJoint::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh)
     }
 
     // initialize servos with correct mode
+    ROS_INFO("Asserting spec compatibility");
     for (int i=0; i<num_joints; i++)
     {
-        ROS_INFO("Asserting spec compatibility");
         ROS_ASSERT(servos[i].get_protocol_hash() == avlos_proto_hash);
-        ROS_INFO("Asserting calibrated");
+        ROS_INFO("%s ok", joint_name[i].c_str());
+    }
+
+    ROS_INFO("Asserting calibrated");
+    for (int i=0; i<num_joints; i++)
+    {
         ROS_ASSERT((servos[i].encoder.get_calibrated() == true) && (servos[i].motor.get_calibrated() == true));
+        ROS_INFO("%s ok", joint_name[i].c_str());
     }
 
     for (int i=0; i<num_joints; i++)
