@@ -49,9 +49,8 @@ unsigned char can_len2dlc(unsigned char len)
 
 namespace scpp
 {
-    SocketCan::SocketCan()
-    {
-    }
+    SocketCan::SocketCan() {}
+
     SocketCanStatus SocketCan::open(const std::string & can_interface, int32_t read_timeout_ms, SocketMode mode)
     {
         m_interface = can_interface;
@@ -128,11 +127,19 @@ namespace scpp
             perror("bind");
             return STATUS_BIND_ERROR;
         }
+        struct can_filter rfilter[1];
+        rfilter[0].can_id   = ~0x00000700;
+        rfilter[0].can_mask = 0x1FFFFF00;
+        if (setsockopt(m_socket, SOL_CAN_RAW, CAN_RAW_FILTER, &rfilter, sizeof(rfilter)) < 0) {
+            perror("setsockopt");
+            return STATUS_SOCKET_CREATE_ERROR; // You should define this status
+        }
 #else
         printf("Your operating system does not support socket can! \n");
 #endif
         return STATUS_OK;
     }
+
     SocketCanStatus SocketCan::write(const CanFrame & msg)
     {
 #ifdef HAVE_SOCKETCAN_HEADERS
@@ -140,6 +147,9 @@ namespace scpp
         memset(&frame, 0, sizeof(frame)); /* init CAN FD frame, e.g. LEN = 0 */
         //convert CanFrame to canfd_frame
         frame.can_id = msg.id;
+        if (msg.id > 0x7FF) {
+            frame.can_id |= CAN_EFF_FLAG; // Set extended frame format bit
+        }
         frame.len = msg.len;
         frame.flags = msg.flags;
         memcpy(frame.data, msg.data, msg.len);
@@ -159,19 +169,17 @@ namespace scpp
 #endif
         return STATUS_OK;
     }
+
     SocketCanStatus SocketCan::read(CanFrame & msg)
     {
 #ifdef HAVE_SOCKETCAN_HEADERS
         struct canfd_frame frame;
-
-        // Read in a CAN frame
         auto num_bytes = ::read(m_socket, &frame, CANFD_MTU);
         if (num_bytes != CAN_MTU && num_bytes != CANFD_MTU)
         {
-            //perror("Can read error");
+            perror("Can read error");
             return STATUS_READ_ERROR;
         }
-
         msg.id = frame.can_id;
         msg.len = frame.len;
         msg.flags = frame.flags;
@@ -181,6 +189,7 @@ namespace scpp
 #endif
         return STATUS_OK;
     }
+
     SocketCanStatus SocketCan::close()
     {
 #ifdef HAVE_SOCKETCAN_HEADERS
@@ -192,6 +201,7 @@ namespace scpp
     {
         return m_interface;
     }
+
     SocketCan::~SocketCan()
     {
         close();

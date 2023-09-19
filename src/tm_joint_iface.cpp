@@ -5,7 +5,11 @@
 
 #include <linux/can.h>
 #include <linux/can/raw.h>
+#include <stdexcept>
 
+#include <ros/console.h>
+
+#include "socketcan_cpp/socketcan_cpp.hpp"
 #include <tm_joint_iface.hpp>
 
 using namespace std;
@@ -14,7 +18,32 @@ namespace tinymovr_ros
 {
 
  
-TinymovrCAN tmcan;
+scpp::SocketCan socket_can;
+
+const char* SocketCanErrorToString(scpp::SocketCanStatus status) {
+    switch (status) {
+        case scpp::STATUS_OK:
+            return "No error";
+        case scpp::STATUS_SOCKET_CREATE_ERROR:
+            return "SocketCAN socket creation error";
+        case scpp::STATUS_INTERFACE_NAME_TO_IDX_ERROR:
+            return "SocketCAN interface name to index error";
+        case scpp::STATUS_MTU_ERROR:
+            return "SocketCAN maximum transfer unit error";
+        case scpp::STATUS_CANFD_NOT_SUPPORTED:
+            return "SocketCAN flexible data-rate not supported on this interface";
+        case scpp::STATUS_ENABLE_FD_SUPPORT_ERROR:
+            return "Error enabling SocketCAN flexible-data-rate support";
+        case scpp::STATUS_WRITE_ERROR:
+            return "SocketCAN write error";
+        case scpp::STATUS_READ_ERROR:
+            return "SocketCAN read error";
+        case scpp::STATUS_BIND_ERROR:
+            return "SocketCAN bind error";
+        default:
+            return "Unknown SocketCAN error";
+    }
+}
 
 // ---------------------------------------------------------------
 /*
@@ -24,14 +53,30 @@ TinymovrCAN tmcan;
  *
  *  arbitration_id: the frame arbitration id
  *  data: pointer to the data array to be transmitted
- *  data_size: the size of transmitted data
+ *  data_length: the size of transmitted data
  *  rtr: if the frame is of request transmit type (RTR)
  */
-void send_cb(uint32_t arbitration_id, uint8_t *data, uint8_t data_size, bool rtr)
+void send_cb(uint32_t arbitration_id, uint8_t *data, uint8_t data_length, bool rtr)
 {
-    if (!tmcan.write_frame(arbitration_id, data, data_size))
+    ROS_DEBUG_STREAM("Attempting to write CAN frame with arbitration_id: " << arbitration_id);
+
+    scpp::CanFrame cf_to_write;
+
+    cf_to_write.id = arbitration_id;
+    if (rtr) {
+        cf_to_write.id |= CAN_RTR_FLAG; // Set RTR flag if rtr argument
+    }
+    cf_to_write.len = data_length;
+    for (int i = 0; i < data_length; ++i)
+        cf_to_write.data[i] = data[i];
+    auto write_status = socket_can.write(cf_to_write);
+    if (write_status != scpp::STATUS_OK)
     {
-        throw "CAN write error";
+        throw std::runtime_error(SocketCanErrorToString(write_status));
+    }
+    else
+    {
+        ROS_DEBUG_STREAM("CAN frame with arbitration_id: " << arbitration_id << " written successfully.");
     }
 }
 
@@ -42,15 +87,27 @@ void send_cb(uint32_t arbitration_id, uint8_t *data, uint8_t data_size, bool rtr
  *
  *  arbitration_id: the frame arbitration id pointer
  *  data: pointer to the data array to be received
- *  data_size: pointer to the variable that will hold the size of received data
+ *  data_length: pointer to the variable that will hold the size of received data
  */
-bool recv_cb(uint32_t *arbitration_id, uint8_t *data, uint8_t *data_size)
+bool recv_cb(uint32_t *arbitration_id, uint8_t *data, uint8_t *data_length)
 {
-    if (!tmcan.read_frame(arbitration_id, data, data_size))
+    ROS_DEBUG_STREAM("Attempting to read CAN frame...");
+
+    scpp::CanFrame fr;
+    scpp::SocketCanStatus read_status = socket_can.read(fr);
+    if (read_status == scpp::STATUS_OK)
     {
-        throw "CAN read error";
+        *arbitration_id = fr.id & CAN_EFF_MASK;
+        *data_length = fr.len;
+        std::copy(fr.data, fr.data + fr.len, data);
+        ROS_DEBUG_STREAM("CAN frame with arbitration_id: " << *arbitration_id << " read successfully.");
+        return true;
     }
-    return true;
+    else
+    {
+        throw std::runtime_error(SocketCanErrorToString(read_status));
+        return false;
+    }
 }
 
 /*
@@ -62,7 +119,7 @@ bool recv_cb(uint32_t *arbitration_id, uint8_t *data, uint8_t *data_size)
  */
 void delay_us_cb(uint32_t us)
 {
-  ros::Duration(us * 1e-6).sleep();
+    ros::Duration(us * 1e-6).sleep();
 }
 // ---------------------------------------------------------------
 
@@ -78,19 +135,23 @@ bool TinymovrJoint::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh)
     bool got_all_params = true;
 
     // build servo instances from configuration
-    if (got_all_params &= robot_hw_nh.getParam("joints", servos_param)) {
+    if (got_all_params &= robot_hw_nh.getParam("/tinymovr_joint_iface/joints", servos_param)) {
             ROS_ASSERT(servos_param.getType() == XmlRpc::XmlRpcValue::TypeStruct);
         try {
             for (XmlRpc::XmlRpcValue::ValueStruct::const_iterator it = servos_param.begin(); it != servos_param.end(); ++it) {
 
-                ROS_DEBUG_STREAM("servo: " << (std::string)(it->first));
+                std::string current_joint_name = static_cast<std::string>(it->first);
+                ROS_INFO_STREAM("servo: " << current_joint_name);
+                joint_name.push_back(current_joint_name); // Store joint name
 
                 id_t id;
+                int delay_us;
                 if (it->second.hasMember("id"))
                 {
                     id = static_cast<int>(servos_param[it->first]["id"]);
-                    ROS_DEBUG_STREAM("\tid: " << (int)id);
-                    servos.push_back(Tinymovr(id, &send_cb, &recv_cb, &delay_us_cb));
+                    delay_us = static_cast<int>(servos_param[it->first]["delay_us"]);
+                    ROS_INFO_STREAM("\tid: " << id << " delay_us: " << delay_us);
+                    servos.push_back(Tinymovr(id, &send_cb, &recv_cb, &delay_us_cb, delay_us));
                     servo_modes.push_back(servos_param[it->first]["command_interface"]);
                 }
                 else
@@ -112,8 +173,8 @@ bool TinymovrJoint::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh)
     if (!got_all_params) {
         std::string sub_namespace = robot_hw_nh.getNamespace();
         std::string error_message = "One or more of the following parameters "
-                                    "were not set:\n"
-            + sub_namespace + "/servos";
+                            "were not set:\n"
+            + sub_namespace + "/tinymovr_joint_iface/joints";
         ROS_FATAL_STREAM(error_message);
         return false;
     }
@@ -127,18 +188,39 @@ bool TinymovrJoint::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh)
     joint_velocity_state.resize(num_joints, 0.0);
     joint_effort_state.resize(num_joints, 0.0);
 
-    tmcan.init();
+    const scpp::SocketCanStatus status = socket_can.open("can0");
+    if (scpp::STATUS_OK == status)
+    {
+        ROS_INFO("Socketcan opened successfully");
+    }
+    else
+    {
+        ROS_ERROR("Cant' open Socketcan: %d", status);
+        exit(1);
+    }
 
     // initialize servos with correct mode
     for (int i=0; i<num_joints; i++)
     {
+        ROS_INFO("Asserting spec compatibility");
+        ROS_ASSERT(servos[i].get_protocol_hash() == avlos_proto_hash);
+        ROS_INFO("Asserting calibrated");
         ROS_ASSERT((servos[i].encoder.get_calibrated() == true) && (servos[i].motor.get_calibrated() == true));
-        servos[i].controller.set_state(2);
-        servos[i].controller.set_mode(_str2mode(servo_modes[i]));
-        ros::Duration(0.001).sleep();
-        ROS_ASSERT((servos[i].controller.get_state() == 2) && (servos[i].controller.get_mode() == 2));
     }
 
+    for (int i=0; i<num_joints; i++)
+    { 
+        ROS_INFO("Setting state");
+        servos[i].controller.set_state(2);
+        const uint8_t mode = _str2mode(servo_modes[i]);
+        ROS_INFO("Setting mode to %u", mode);
+        servos[i].controller.set_mode(mode);
+        ros::Duration(0.001).sleep();
+        ROS_INFO("Asserting state and mode");
+        ROS_ASSERT((servos[i].controller.get_state() == 2) && (servos[i].controller.get_mode() == 1));
+    }
+
+    ROS_INFO("Registering Interfaces");
     // register state interfaces
     for (int i=0; i<num_joints; i++)
     {
@@ -151,16 +233,18 @@ bool TinymovrJoint::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh)
             );
         joint_state_interface.registerHandle(state_handle);
         
+        const uint8_t mode = _str2mode(servo_modes[i]);
+
         // connect and register the joint position interface
-        hardware_interface::JointHandle pos_handle(joint_state_interface.getHandle("Joint"), &joint_position_command[i]);
+        hardware_interface::JointHandle pos_handle(joint_state_interface.getHandle(joint_name[i]), &joint_position_command[i]);
         joint_pos_interface.registerHandle(pos_handle);
         
         // connect and register the joint velocity interface
-        hardware_interface::JointHandle vel_handle(joint_state_interface.getHandle("Joint"), &joint_velocity_command[i]);
+        hardware_interface::JointHandle vel_handle(joint_state_interface.getHandle(joint_name[i]), &joint_velocity_command[i]);
         joint_vel_interface.registerHandle(vel_handle);
         
         // connect and register the joint effort interface
-        hardware_interface::JointHandle eff_handle(joint_state_interface.getHandle("Joint"), &joint_effort_command[i]);
+        hardware_interface::JointHandle eff_handle(joint_state_interface.getHandle(joint_name[i]), &joint_effort_command[i]);
         joint_eff_interface.registerHandle(eff_handle);
     }
 
@@ -219,6 +303,16 @@ void TinymovrJoint::write(const ros::Time& time, const ros::Duration& period)
     catch(const std::exception& e)
     {
         ROS_ERROR_STREAM("Error while writing Tinymovr CAN:\n" << e.what());
+    }
+}
+
+void TinymovrJoint::shutdown() 
+{
+    ROS_INFO("Explicitly shutting down Tinymovr instances from hardware interface.");
+    for (int i=0; i<num_joints; i++)
+    { 
+        servos[i].controller.set_state(0);
+        ros::Duration(0.001).sleep();
     }
 }
 

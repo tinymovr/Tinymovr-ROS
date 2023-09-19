@@ -14,8 +14,8 @@ class Can_ : Node
 {
     public:
 
-        Can_(uint8_t _can_node_id, send_callback _send_cb, recv_callback _recv_cb, delay_us_callback _delay_us_cb):
-            Node(_can_node_id, _send_cb, _recv_cb, _delay_us_cb) {};
+        Can_(uint8_t _can_node_id, send_callback _send_cb, recv_callback _recv_cb, delay_us_callback _delay_us_cb, uint32_t _delay_us_value):
+            Node(_can_node_id, _send_cb, _recv_cb, _delay_us_cb, _delay_us_value) {};
         uint32_t get_rate(void);
         void set_rate(uint32_t value);
         uint32_t get_id(void);
