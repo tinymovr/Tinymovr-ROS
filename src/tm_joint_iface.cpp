@@ -17,7 +17,6 @@ using namespace std;
 namespace tinymovr_ros
 {
 
- 
 scpp::SocketCan socket_can;
 
 const char* SocketCanErrorToString(scpp::SocketCanStatus status) {
@@ -45,16 +44,20 @@ const char* SocketCanErrorToString(scpp::SocketCanStatus status) {
     }
 }
 
-// ---------------------------------------------------------------
-/*
- * Function:  send_cb 
- * --------------------
- *  Is called to send a CAN frame
- *
- *  arbitration_id: the frame arbitration id
- *  data: pointer to the data array to be transmitted
- *  data_length: the size of transmitted data
- *  rtr: if the frame is of request transmit type (RTR)
+/**
+ * @brief Callback function to send a CAN frame.
+ * 
+ * This function is called whenever a CAN frame needs to be transmitted. It sets up the necessary 
+ * CAN frame fields and writes the frame using the SocketCAN interface.
+ * 
+ * @param arbitration_id The frame arbitration id.
+ * @param data Pointer to the data array to be transmitted.
+ * @param data_length The size of transmitted data.
+ * @param rtr If the frame is of request transmit type (RTR).
+ * 
+ * @throws std::runtime_error If the CAN frame write fails.
+ * 
+ * @note The function logs debug messages about the CAN frame write status.
  */
 void send_cb(uint32_t arbitration_id, uint8_t *data, uint8_t data_length, bool rtr)
 {
@@ -80,14 +83,21 @@ void send_cb(uint32_t arbitration_id, uint8_t *data, uint8_t data_length, bool r
     }
 }
 
-/*
- * Function:  recv_cb 
- * --------------------
- *  Is called to receive a CAN frame
- *
- *  arbitration_id: the frame arbitration id pointer
- *  data: pointer to the data array to be received
- *  data_length: pointer to the variable that will hold the size of received data
+/**
+ * @brief Callback function to receive a CAN frame.
+ * 
+ * This function is called whenever a CAN frame is to be received. It attempts to read a CAN 
+ * frame using the SocketCAN interface.
+ * 
+ * @param arbitration_id Pointer to the frame arbitration id.
+ * @param data Pointer to the data array to be received.
+ * @param data_length Pointer to the variable that will hold the size of received data.
+ * 
+ * @return True if the CAN frame was read successfully, false otherwise.
+ * 
+ * @throws std::runtime_error If the CAN frame read fails.
+ * 
+ * @note The function logs debug messages about the CAN frame read status.
  */
 bool recv_cb(uint32_t *arbitration_id, uint8_t *data, uint8_t *data_length)
 {
@@ -110,23 +120,41 @@ bool recv_cb(uint32_t *arbitration_id, uint8_t *data, uint8_t *data_length)
     }
 }
 
-/*
- * Function:  delay_us_cb 
- * --------------------
- *  Is called to perform a delay
- *
- *  us: the microseconds to wait for
+/**
+ * @brief Callback function to perform a delay.
+ * 
+ * This function is called whenever a delay is required. It uses the ROS sleep functionality
+ * to create a delay for a specified duration in microseconds.
+ * 
+ * @param us The microseconds to wait for.
+ * 
+ * @note The function relies on the ROS sleep mechanism for precise timing.
  */
 void delay_us_cb(uint32_t us)
 {
     ros::Duration(us * 1e-6).sleep();
 }
-// ---------------------------------------------------------------
 
 TinymovrJoint::TinymovrJoint() {}
 
 TinymovrJoint::~TinymovrJoint() {}
 
+/**
+ * @brief Initializes the TinymovrJoint instance.
+ * 
+ * This function initializes the TinymovrJoint, setting up the servos based on the ROS parameters
+ * specified in the given NodeHandle. It also sets up the interfaces for joint state, position,
+ * velocity, and effort, and registers these interfaces.
+ * 
+ * @param root_nh The root node handle.
+ * @param robot_hw_nh The robot hardware node handle.
+ * 
+ * @return True if initialization succeeds, false otherwise.
+ * 
+ * @note The initialization process involves several steps, including reading configuration
+ * from the ROS parameter server, setting up the SocketCAN interface, initializing each
+ * servo's mode and state, and registering the necessary hardware interfaces.
+ */
 bool TinymovrJoint::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh)
 {
     
@@ -256,24 +284,36 @@ bool TinymovrJoint::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh)
     return true;
 }
 
- /** Convert a string to an operating mode
-        @param mode_string name of the operating mode (current or effort, velocity or position)
-        @return mode index corresponding to the index of the mode
-    **/
-    uint8_t TinymovrJoint::_str2mode(std::string& mode_string)
-    {
-        if ("current" == mode_string || "effort" == mode_string)
-            return 0;
-        if ("velocity" == mode_string)
-            return 1;
-        else if ("position" == mode_string)
-            return 2;
-        else {
-            ROS_ERROR_STREAM("The command mode " << mode_string << " is not available");
-            return 0;
-        }
+/** 
+ * @brief Convert a string to an operating mode
+ *
+ * @param mode_string name of the operating mode (current or effort, velocity or position)
+ * @return mode index corresponding to the index of the mode
+ */
+uint8_t TinymovrJoint::_str2mode(std::string& mode_string)
+{
+    if ("current" == mode_string || "effort" == mode_string)
+        return 0;
+    if ("velocity" == mode_string)
+        return 1;
+    else if ("position" == mode_string)
+        return 2;
+    else {
+        ROS_ERROR_STREAM("The command mode " << mode_string << " is not available");
+        return 0;
     }
+}
 
+/**
+ * @brief Reads the state of each servo in the TinymovrJoint.
+ * 
+ * This function iterates over each servo connected to the TinymovrJoint
+ * and fetches its current position, velocity, and effort (current) state.
+ * In case of any communication or other exceptions, an error is logged.
+ *
+ * @param time Current ROS time.
+ * @param period Time since the last call to this function.
+ */
 void TinymovrJoint::read(const ros::Time& time, const ros::Duration& period)
 {
     try {
@@ -290,6 +330,17 @@ void TinymovrJoint::read(const ros::Time& time, const ros::Duration& period)
     }
 }
 
+/**
+ * @brief Writes command values to each servo in the TinymovrJoint.
+ * 
+ * This function iterates over each servo connected to the TinymovrJoint 
+ * and sets the position, velocity, and effort (current) setpoints 
+ * as per the current command values.
+ * In case of any communication or other exceptions, an error is logged.
+ *
+ * @param time Current ROS time.
+ * @param period Time since the last call to this function.
+ */
 void TinymovrJoint::write(const ros::Time& time, const ros::Duration& period)
 {
     try {
