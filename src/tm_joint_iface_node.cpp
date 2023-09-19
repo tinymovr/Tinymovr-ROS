@@ -10,7 +10,9 @@ int main(int argc, char **argv)
     ros::AsyncSpinner spinner(1);
     spinner.start();
     ros::NodeHandle nh;
+    
     tinymovr_ros::TinymovrJoint tm_joint;
+
     bool init_success = tm_joint.init(nh, nh);
 
     controller_manager::ControllerManager cm(&tm_joint, nh);
@@ -25,6 +27,8 @@ int main(int argc, char **argv)
         tm_joint.write(ros::Time::now(), rate.expectedCycleTime());
         rate.sleep();
     }
+
+    tm_joint.shutdown();
 
     spinner.stop();
     return 0;

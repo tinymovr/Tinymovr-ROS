@@ -25,6 +25,7 @@ public:
     bool init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh);
     void read(const ros::Time& /*time*/, const ros::Duration& /*period*/);
     void write(const ros::Time& /*time*/, const ros::Duration& /*period*/);
+    void shutdown() ;
 
 protected:
     ros::NodeHandle nh_;

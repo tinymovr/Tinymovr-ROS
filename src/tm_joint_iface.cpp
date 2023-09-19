@@ -140,7 +140,9 @@ bool TinymovrJoint::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh)
         try {
             for (XmlRpc::XmlRpcValue::ValueStruct::const_iterator it = servos_param.begin(); it != servos_param.end(); ++it) {
 
-                ROS_INFO_STREAM("servo: " << (std::string)(it->first));
+                std::string current_joint_name = static_cast<std::string>(it->first);
+                ROS_INFO_STREAM("servo: " << current_joint_name);
+                joint_name.push_back(current_joint_name); // Store joint name
 
                 id_t id;
                 int delay_us;
@@ -186,7 +188,7 @@ bool TinymovrJoint::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh)
     joint_velocity_state.resize(num_joints, 0.0);
     joint_effort_state.resize(num_joints, 0.0);
 
-    auto status = socket_can.open("can0");
+    const scpp::SocketCanStatus status = socket_can.open("can0");
     if (scpp::STATUS_OK == status)
     {
         ROS_INFO("Socketcan opened successfully");
@@ -210,13 +212,15 @@ bool TinymovrJoint::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh)
     { 
         ROS_INFO("Setting state");
         servos[i].controller.set_state(2);
-        ROS_INFO("Setting mode");
-        servos[i].controller.set_mode(_str2mode(servo_modes[i]));
+        const uint8_t mode = _str2mode(servo_modes[i]);
+        ROS_INFO("Setting mode to %u", mode);
+        servos[i].controller.set_mode(mode);
         ros::Duration(0.001).sleep();
         ROS_INFO("Asserting state and mode");
-        ROS_ASSERT((servos[i].controller.get_state() == 2) && (servos[i].controller.get_mode() == 2));
+        ROS_ASSERT((servos[i].controller.get_state() == 2) && (servos[i].controller.get_mode() == 1));
     }
 
+    ROS_INFO("Registering Interfaces");
     // register state interfaces
     for (int i=0; i<num_joints; i++)
     {
@@ -229,16 +233,18 @@ bool TinymovrJoint::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh)
             );
         joint_state_interface.registerHandle(state_handle);
         
+        const uint8_t mode = _str2mode(servo_modes[i]);
+
         // connect and register the joint position interface
-        hardware_interface::JointHandle pos_handle(joint_state_interface.getHandle("Joint"), &joint_position_command[i]);
+        hardware_interface::JointHandle pos_handle(joint_state_interface.getHandle(joint_name[i]), &joint_position_command[i]);
         joint_pos_interface.registerHandle(pos_handle);
         
         // connect and register the joint velocity interface
-        hardware_interface::JointHandle vel_handle(joint_state_interface.getHandle("Joint"), &joint_velocity_command[i]);
+        hardware_interface::JointHandle vel_handle(joint_state_interface.getHandle(joint_name[i]), &joint_velocity_command[i]);
         joint_vel_interface.registerHandle(vel_handle);
         
         // connect and register the joint effort interface
-        hardware_interface::JointHandle eff_handle(joint_state_interface.getHandle("Joint"), &joint_effort_command[i]);
+        hardware_interface::JointHandle eff_handle(joint_state_interface.getHandle(joint_name[i]), &joint_effort_command[i]);
         joint_eff_interface.registerHandle(eff_handle);
     }
 
@@ -297,6 +303,16 @@ void TinymovrJoint::write(const ros::Time& time, const ros::Duration& period)
     catch(const std::exception& e)
     {
         ROS_ERROR_STREAM("Error while writing Tinymovr CAN:\n" << e.what());
+    }
+}
+
+void TinymovrJoint::shutdown() 
+{
+    ROS_INFO("Explicitly shutting down Tinymovr instances from hardware interface.");
+    for (int i=0; i<num_joints; i++)
+    { 
+        servos[i].controller.set_state(0);
+        ros::Duration(0.001).sleep();
     }
 }
 
