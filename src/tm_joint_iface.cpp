@@ -229,33 +229,33 @@ bool TinymovrJoint::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh)
     }
 
     // initialize servos with correct mode
-    ROS_INFO("Asserting spec compatibility");
+    ROS_DEBUG("Asserting spec compatibility");
     for (int i=0; i<num_joints; i++)
     {
         ROS_ASSERT(servos[i].get_protocol_hash() == avlos_proto_hash);
-        ROS_INFO("%s ok", joint_name[i].c_str());
+        ROS_DEBUG("%s ok", joint_name[i].c_str());
     }
 
-    ROS_INFO("Asserting calibrated");
+    ROS_DEBUG("Asserting calibrated");
     for (int i=0; i<num_joints; i++)
     {
         ROS_ASSERT((servos[i].encoder.get_calibrated() == true) && (servos[i].motor.get_calibrated() == true));
-        ROS_INFO("%s ok", joint_name[i].c_str());
+        ROS_DEBUG("%s ok", joint_name[i].c_str());
     }
 
     for (int i=0; i<num_joints; i++)
     { 
-        ROS_INFO("Setting state");
+        ROS_DEBUG("Setting state");
         servos[i].controller.set_state(2);
         const uint8_t mode = _str2mode(servo_modes[i]);
-        ROS_INFO("Setting mode to %u", mode);
+        ROS_DEBUG("Setting mode to %u", mode);
         servos[i].controller.set_mode(mode);
         ros::Duration(0.001).sleep();
-        ROS_INFO("Asserting state and mode");
+        ROS_DEBUG("Asserting state and mode");
         ROS_ASSERT((servos[i].controller.get_state() == 2) && (servos[i].controller.get_mode() == mode));
     }
 
-    ROS_INFO("Registering Interfaces");
+    ROS_DEBUG("Registering Tinymovr Interfaces");
     // register state interfaces
     for (int i=0; i<num_joints; i++)
     {
