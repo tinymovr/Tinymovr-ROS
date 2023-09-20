@@ -1,4 +1,0 @@
-arm_controller:
-  type: "velocity_controllers/JointVelocityController"
-  joint: arm_1
-  pid: {p: 1.0, i: 0.0, d: 0.0}

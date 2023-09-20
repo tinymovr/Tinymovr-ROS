@@ -38,6 +38,7 @@ protected:
     int num_joints;
     std::vector<string> joint_name;
     std::vector<int> joint_id;
+    std::vector<double> rads_to_ticks;
     
     std::vector<double> joint_position_command;
     std::vector<double> joint_velocity_command;

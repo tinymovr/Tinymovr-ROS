@@ -181,6 +181,7 @@ bool TinymovrJoint::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh)
                     ROS_INFO_STREAM("\tid: " << id << " delay_us: " << delay_us);
                     servos.push_back(Tinymovr(id, &send_cb, &recv_cb, &delay_us_cb, delay_us));
                     servo_modes.push_back(servos_param[it->first]["command_interface"]);
+                    rads_to_ticks.push_back(static_cast<double>(servos_param[it->first]["rads_to_ticks"]));
                 }
                 else
                 {
@@ -325,8 +326,9 @@ void TinymovrJoint::read(const ros::Time& time, const ros::Duration& period)
     try {
         for (int i=0; i<servos.size(); i++)
         {
-            joint_position_state[i] = servos[i].encoder.get_position_estimate();
-            joint_velocity_state[i] = servos[i].encoder.get_velocity_estimate();
+            const double ticks_to_rads = 1.0/rads_to_ticks[i];
+            joint_position_state[i] = servos[i].encoder.get_position_estimate() * ticks_to_rads;
+            joint_velocity_state[i] = servos[i].encoder.get_velocity_estimate() * ticks_to_rads;
             joint_effort_state[i] = servos[i].controller.current.get_Iq_estimate();
         }
     }
@@ -352,8 +354,8 @@ void TinymovrJoint::write(const ros::Time& time, const ros::Duration& period)
     try {
         for (int i=0; i<servos.size(); i++)
         {
-            servos[i].controller.position.set_setpoint(joint_position_command[i]);
-            servos[i].controller.velocity.set_setpoint(joint_velocity_command[i]);
+            servos[i].controller.position.set_setpoint(joint_position_command[i] * rads_to_ticks[i]);
+            servos[i].controller.velocity.set_setpoint(joint_velocity_command[i] * rads_to_ticks[i]);
             servos[i].controller.current.set_Iq_setpoint(joint_effort_command[i]);
         }
     }

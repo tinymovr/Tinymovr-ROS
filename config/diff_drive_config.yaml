@@ -1,0 +1,25 @@
+diff_drive_controller:
+  type: "diff_drive_controller/DiffDriveController"
+  left_wheel: 'arm_1'
+  right_wheel: 'arm_2'
+  publish_rate: 50.0
+  required_drive_mode: 'velocity'
+  wheel_separation: 0.3
+  wheel_radius: 0.1
+  velocity_rolling_window_size: 10
+
+  # Assuming you have velocity command interface, if not adjust accordingly
+  left_wheel_name: arm_1
+  right_wheel_name: arm_2
+  velocity_rolling_window_size: 10
+
+  publish_wheel_joint_controller_state: true
+
+  # Make sure to match these with your hardware's limits
+  max_wheel_velocity: 0.5  # in m/s, adjust as necessary
+  min_wheel_velocity: -0.5  # in m/s, adjust as necessary
+
+  # Hardware interface parameters
+  joints:
+    - arm_1
+    - arm_2
