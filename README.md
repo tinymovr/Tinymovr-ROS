@@ -1,6 +1,6 @@
 __Tinymovr ROS Hardware Interface__
 
-A ROS package that provides hardware interfacing for Tinymovr devices. This interface allows for seamless integration of Tinymovr devices with ROS-based robotic systems, offering joint state and control through ROS topics and services.
+A ROS package that provides hardware interfacing for the [Tinymovr](https://tinymovr.com) motor controller. This interface allows for seamless integration of Tinymovr devices with ROS-based robotic systems, offering joint state and control through ROS topics and services.
 
 ## Features
 - Real-time reading of joint positions, velocities, and efforts.
@@ -12,7 +12,8 @@ A ROS package that provides hardware interfacing for Tinymovr devices. This inte
 
 - ROS (Robot Operating System) - Tested with ROS Noetic, but should be compatible with other versions.
 - SocketCAN tools and utilities installed.
-- Tinymovr devices properly set up and calibrated.
+- Tinymovr devices with firmware 1.6.x
+- Devices properly set up and calibrated.
 
 ## Installation
 
@@ -73,4 +74,4 @@ Contributions to improve and expand the functionality of Tinymovr ROS are welcom
 
 ## License
 
-This package is licensed under the [MIT License](LICENSE).
+This package is licensed under the [Apache 2.0 License](LICENSE).
