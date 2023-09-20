@@ -41,19 +41,27 @@ catkin_make
 source devel/setup.bash
 ```
 
-## Usage
+## Run the Diffbot demo!
 
-1. Start the `tinymovr_joint_iface` node:
+1. Ensure your Tinymovr instances are calibrated and well tuned, test functioning using Tinymovr Studio or CLI.
+
+2. Configure your hardware in `config/hardware.yaml` and diff drive config in `config/diff_drive_config.yaml`
+
+3. Start the `tinymovr_diffbot_demo_node` node:
 
 ```bash
-roslaunch tinymovr_joint_iface tinymovr_joint_iface.launch
+roslaunch tinymovr_ros tinymovr_diffbot_demo_node.launch
 ```
 
-2. Publish commands or subscribe to the relevant ROS topics for joint control and state information.
+4. Spin up a keyboard teleop and drive your robot:
+
+```bash
+rosrun teleop_twist_keyboard teleop_twist_keyboard.py cmd_vel:=/diff_drive_controller/cmd_vel
+```
 
 ## Configuration
 
-To customize the behavior of the `tinymovr_joint_iface`, adjust the parameters in the `config` directory. Here, you can set specifics about each joint, including joint names, IDs, and other parameters relevant to your hardware setup.
+To customize the behavior of the Tinymovr ROS, adjust the parameters in the `config` directory. Here, you can set specifics about each joint, including joint names, IDs, and other parameters relevant to your hardware setup.
 
 ## API Documentation
 
@@ -61,7 +69,7 @@ Further details about the API and individual functions can be found in the gener
 
 ## Contributing
 
-Contributions to improve and expand the functionality of `tinymovr_joint_iface` are welcome! Please open an issue or submit a pull request on the GitHub repository.
+Contributions to improve and expand the functionality of Tinymovr ROS are welcome! Please open an issue or submit a pull request on the GitHub repository.
 
 ## License
 
