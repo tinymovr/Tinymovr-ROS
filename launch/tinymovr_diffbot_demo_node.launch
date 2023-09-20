@@ -6,8 +6,5 @@
    <node name="tinymovr_joint_iface" pkg="tinymovr_ros" type="tinymovr_joint_iface_node" output="screen"/>
    <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" args="diff_drive_controller"/>
 
-   <!-- Launch teleop node -->
-   <node name="teleop_twist_keyboard" pkg="teleop_twist_keyboard" type="teleop_twist_keyboard.py" output="screen">
-     <param name="cmd_vel" value="/diff_drive_controller/cmd_vel"/>
-   </node>
+
 </launch>
