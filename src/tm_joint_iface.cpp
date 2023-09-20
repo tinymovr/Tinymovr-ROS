@@ -252,7 +252,7 @@ bool TinymovrJoint::init(ros::NodeHandle& root_nh, ros::NodeHandle& robot_hw_nh)
         servos[i].controller.set_mode(mode);
         ros::Duration(0.001).sleep();
         ROS_INFO("Asserting state and mode");
-        ROS_ASSERT((servos[i].controller.get_state() == 2) && (servos[i].controller.get_mode() == 1));
+        ROS_ASSERT((servos[i].controller.get_state() == 2) && (servos[i].controller.get_mode() == mode));
     }
 
     ROS_INFO("Registering Interfaces");
