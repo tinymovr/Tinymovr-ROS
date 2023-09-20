@@ -1,0 +1,11 @@
+
+# All paths relative to this config file
+
+generators:
+  generator_cpp:
+    enabled: true
+    paths:
+      output_helpers: ./include/tinymovr/helpers.hpp
+      output_header: ./include/tinymovr/tinymovr.hpp
+      output_impl: ./src/tinymovr/tinymovr.cpp
+

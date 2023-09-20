@@ -49,6 +49,11 @@
   <!-- Use doc_depend for packages you need only for building documentation: -->
   <!--   <doc_depend>doxygen</doc_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>velocity_controllers</depend>
+  <depend>position_controllers</depend>
+  <depend>effort_controllers</depend>
+
   <build_depend>controller_interface</build_depend>
   <build_depend>controller_manager</build_depend>
   <build_depend>geometry_msgs</build_depend>
@@ -81,6 +86,7 @@
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>tf</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
+    <exec_depend>diff_drive_controller</exec_depend>
 
   
 
