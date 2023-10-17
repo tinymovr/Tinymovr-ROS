@@ -72,6 +72,10 @@ Further details about the API and individual functions can be found in the gener
 
 Contributions to improve and expand the functionality of Tinymovr ROS are welcome! Please open an issue or submit a pull request on the GitHub repository.
 
+## External Links
+
+[ROS Wiki Page](http://wiki.ros.org/Robots/tinymovr)
+
 ## License
 
 This package is licensed under the [Apache 2.0 License](LICENSE).
