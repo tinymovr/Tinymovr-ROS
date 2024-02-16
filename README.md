@@ -15,6 +15,9 @@ A ROS package that provides hardware interfacing for the [Tinymovr](https://tiny
 - Tinymovr devices with firmware 1.6.x
 - Devices properly set up and calibrated.
 
+> [!NOTE]
+> If you plan to use the CANine adapter, you need to flash it with the Candlelight firmware, which is compatible with socketcan. Use [this web-based flasher](https://canable.io/updater/canable1.html) for easy upgrade. Use Chrome and choose the Candlelight firmware from the drop-down list.
+
 ## Installation
 
 1. Navigate to your catkin workspace's source folder:
@@ -40,6 +43,14 @@ catkin_make
 
 ```bash
 source devel/setup.bash
+```
+
+## Bring up Socketcan
+
+Depending on your device you may need to add the correct module to the kernel. Following that, bring up the interface as follows:
+
+```bash
+sudo ip link set can0 type can bitrate 1000000
 ```
 
 ## Run the Diffbot demo!
