@@ -19,7 +19,7 @@
 #include <homing.hpp>
 #include <watchdog.hpp>
 
-static uint32_t avlos_proto_hash = 3999954334;
+static uint32_t avlos_proto_hash = 3786962419;
 
 enum errors_flags
 {
@@ -129,7 +129,8 @@ enum sensors_setup_external_spi_type_options
 {
     SENSORS_SETUP_EXTERNAL_SPI_TYPE_MA7XX = 0, 
     SENSORS_SETUP_EXTERNAL_SPI_TYPE_AS5047 = 1, 
-    SENSORS_SETUP_EXTERNAL_SPI_TYPE_AMT22 = 2
+    SENSORS_SETUP_EXTERNAL_SPI_TYPE_AMT22 = 2, 
+    SENSORS_SETUP_EXTERNAL_SPI_TYPE_MA600 = 3
 };
 
 enum sensors_setup_external_spi_rate_options
